@@ -26,10 +26,6 @@ A free, open-alternative TikTok clone built with React and TypeScript. PishPosh 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd pishposh
-
 # Install dependencies
 npm install
 
