@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react';
 import type {
@@ -43,7 +44,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const isAuthenticated = !!user && !!tokens;
 
+  const initRef = useRef(false);
+
   useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+
     const initAuth = async () => {
       const storedTokens = authService.getStoredTokens();
 
@@ -63,7 +69,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const currentUser = await authService.getCurrentUser(storedTokens.accessToken);
           setUser(currentUser);
         }
-      } catch {
+      } catch (error) {
         authService.clearTokens();
         setUser(null);
         setTokens(null);

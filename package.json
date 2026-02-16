@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:server": "tsx watch server/src/index.ts",
+    "dev:server": "tsx watch --ignore ./server/data server/src/index.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
     "build": "tsc && vite build",
     "build:server": "tsc -p server/tsconfig.json",
