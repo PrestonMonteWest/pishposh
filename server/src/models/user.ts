@@ -55,7 +55,7 @@ function loadUsers(): Map<string, User> {
   }
 }
 
-function saveUsers(): void {
+function saveUsers(users: Map<string, User>): void {
   ensureDataDir();
   writeFileSync(USERS_FILE, JSON.stringify([...users.entries()], null, 2));
 }
@@ -72,20 +72,17 @@ function loadRefreshTokens(): Map<string, RefreshToken> {
   }
 }
 
-function saveRefreshTokens(): void {
+function saveRefreshTokens(tokens: Map<string, RefreshToken>): void {
   ensureDataDir();
-  writeFileSync(TOKENS_FILE, JSON.stringify([...refreshTokens.entries()], null, 2));
+  writeFileSync(TOKENS_FILE, JSON.stringify([...tokens.entries()], null, 2));
 }
 
-const users = loadUsers();
-const refreshTokens = loadRefreshTokens();
-
 export function findUserById(id: string): User | undefined {
-  return users.get(id);
+  return loadUsers().get(id);
 }
 
 export function findUserByEmail(email: string): User | undefined {
-  for (const user of users.values()) {
+  for (const user of loadUsers().values()) {
     if (user.email.toLowerCase() === email.toLowerCase()) {
       return user;
     }
@@ -94,7 +91,7 @@ export function findUserByEmail(email: string): User | undefined {
 }
 
 export function findUserByUsername(username: string): User | undefined {
-  for (const user of users.values()) {
+  for (const user of loadUsers().values()) {
     if (user.username.toLowerCase() === username.toLowerCase()) {
       return user;
     }
@@ -103,8 +100,9 @@ export function findUserByUsername(username: string): User | undefined {
 }
 
 export function createUser(user: User): User {
+  const users = loadUsers();
   users.set(user.id, user);
-  saveUsers();
+  saveUsers(users);
   return user;
 }
 
@@ -114,24 +112,27 @@ export function toPublicUser(user: User): PublicUser {
 }
 
 export function storeRefreshToken(token: RefreshToken): void {
-  refreshTokens.set(token.token, token);
-  saveRefreshTokens();
+  const tokens = loadRefreshTokens();
+  tokens.set(token.token, token);
+  saveRefreshTokens(tokens);
 }
 
 export function findRefreshToken(token: string): RefreshToken | undefined {
-  return refreshTokens.get(token);
+  return loadRefreshTokens().get(token);
 }
 
 export function deleteRefreshToken(token: string): void {
-  refreshTokens.delete(token);
-  saveRefreshTokens();
+  const tokens = loadRefreshTokens();
+  tokens.delete(token);
+  saveRefreshTokens(tokens);
 }
 
 export function deleteUserRefreshTokens(userId: string): void {
-  for (const [token, data] of refreshTokens.entries()) {
+  const tokens = loadRefreshTokens();
+  for (const [token, data] of tokens.entries()) {
     if (data.userId === userId) {
-      refreshTokens.delete(token);
+      tokens.delete(token);
     }
   }
-  saveRefreshTokens();
+  saveRefreshTokens(tokens);
 }

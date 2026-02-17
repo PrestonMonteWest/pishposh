@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export function Home() {
@@ -26,9 +27,15 @@ export function Home() {
             <p className="text-xl text-gray-400 mb-4">
               Welcome, {user?.displayName}!
             </p>
-            <p className="text-gray-500">
+            <p className="text-gray-500 mb-6">
               Your feed will appear here once you start following creators.
             </p>
+            <Link
+              to="/create"
+              className="inline-block px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded transition-colors"
+            >
+              Create Post
+            </Link>
           </div>
         </div>
       </main>

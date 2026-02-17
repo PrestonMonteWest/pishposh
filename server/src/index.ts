@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import oauthRoutes from './routes/oauth.js';
 import usersRoutes from './routes/users.js';
+import postsRoutes from './routes/posts.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,6 +19,7 @@ app.use(express.json());
 // Routes
 app.use('/api/oauth', oauthRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/posts', postsRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
