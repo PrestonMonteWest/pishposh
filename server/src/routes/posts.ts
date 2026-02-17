@@ -1,7 +1,8 @@
 import { Router, type Request, type Response } from 'express';
 import { randomUUID } from 'crypto';
 import { authenticateToken } from '../middleware/auth.js';
-import { createPost } from '../models/post.js';
+import { createPost, findPostsPaginated } from '../models/post.js';
+import { findUserById } from '../models/user.js';
 
 const router = Router();
 
@@ -14,6 +15,24 @@ const ALLOWED_MIME_TYPES = new Set([
   'video/x-matroska',
   'video/webm',
 ]);
+
+router.get('/', authenticateToken, (req: Request, res: Response) => {
+  const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : null;
+  const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 20, 1), 50);
+  const result = findPostsPaginated(cursor, limit);
+
+  const posts = result.posts.map((post) => {
+    const creator = findUserById(post.creatorId);
+    return {
+      ...post,
+      creator: creator
+        ? { username: creator.username, displayName: creator.displayName }
+        : { username: 'unknown', displayName: 'Unknown User' },
+    };
+  });
+
+  res.json({ ...result, posts });
+});
 
 router.post('/', authenticateToken, (req: Request, res: Response) => {
   const { title, content, media } = req.body;

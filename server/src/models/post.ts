@@ -65,3 +65,30 @@ export function findPostsByUserId(userId: string): Post[] {
   }
   return result;
 }
+
+export interface PaginatedPosts {
+  posts: Post[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+export function findPostsPaginated(cursor: string | null, limit: number): PaginatedPosts {
+  const allPosts = Array.from(loadPosts().values())
+    .filter((p) => !p.deletedAt)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  let startIndex = 0;
+  if (cursor) {
+    const cursorIndex = allPosts.findIndex((p) => p.createdAt < cursor);
+    if (cursorIndex === -1) {
+      return { posts: [], nextCursor: null, hasMore: false };
+    }
+    startIndex = cursorIndex;
+  }
+
+  const page = allPosts.slice(startIndex, startIndex + limit);
+  const hasMore = startIndex + limit < allPosts.length;
+  const nextCursor = hasMore ? page[page.length - 1].createdAt : null;
+
+  return { posts: page, nextCursor, hasMore };
+}

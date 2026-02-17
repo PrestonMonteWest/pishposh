@@ -11,7 +11,8 @@
     "build:server": "tsc -p server/tsconfig.json",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start:server": "node server/dist/index.js"
+    "start:server": "node server/dist/index.js",
+    "seed:posts": "tsx server/scripts/seed-posts.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

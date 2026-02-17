@@ -1,8 +1,28 @@
 import type { AuthTokens } from '../types/auth';
-import type { CreatePostRequest, CreatePostResponse } from '../types/post';
+import type { CreatePostRequest, CreatePostResponse, PostsPage } from '../types/post';
 import { getAuthHeader } from './auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+export async function fetchPosts(
+  tokens: AuthTokens,
+  cursor: string | null
+): Promise<PostsPage> {
+  const params = new URLSearchParams();
+  if (cursor) params.set('cursor', cursor);
+  params.set('limit', '20');
+
+  const response = await fetch(`${API_BASE_URL}/posts?${params}`, {
+    headers: getAuthHeader(tokens),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Request failed' }));
+    throw new Error(error.message || 'Failed to fetch posts');
+  }
+
+  return response.json();
+}
 
 export async function createPost(
   tokens: AuthTokens,

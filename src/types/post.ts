@@ -5,6 +5,11 @@ export interface MediaAttachment {
   filename: string;
 }
 
+export interface PostCreator {
+  username: string;
+  displayName: string;
+}
+
 export interface Post {
   id: string;
   title: string;
@@ -14,6 +19,7 @@ export interface Post {
   deletedAt: string | null;
   content: string;
   media: MediaAttachment[];
+  creator: PostCreator;
 }
 
 export interface CreatePostRequest {
@@ -24,4 +30,10 @@ export interface CreatePostRequest {
 
 export interface CreatePostResponse {
   post: Post;
+}
+
+export interface PostsPage {
+  posts: Post[];
+  nextCursor: string | null;
+  hasMore: boolean;
 }
