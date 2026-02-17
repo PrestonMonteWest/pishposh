@@ -5,21 +5,17 @@ export interface MediaAttachment {
   filename: string;
 }
 
-export interface PostCreator {
-  username: string;
-  displayName: string;
-}
-
 export interface Post {
   id: string;
   title: string;
   creatorId: string;
+  creatorUsername: string;
+  creatorDisplayName: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
   content: string;
   media: MediaAttachment[];
-  creator: PostCreator;
 }
 
 export interface CreatePostRequest {

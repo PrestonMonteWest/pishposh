@@ -121,7 +121,7 @@ export function Home() {
                 className="border border-gray-800 rounded-lg p-5"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-pink-400">@{post.creator.username}</span>
+                  <span className="text-sm font-medium text-pink-400">@{post.creatorUsername}</span>
                   <span className="text-sm text-gray-600">&middot;</span>
                   <span className="text-sm text-gray-500">{formatDate(post.createdAt)}</span>
                 </div>

@@ -143,11 +143,14 @@ function generateSeed() {
     const createdAt = new Date(now - i * 30 * 60 * 1000).toISOString();
     const id = randomUUID();
     const creatorId = seedUserIds[i % seedUserIds.length];
+    const creator = existingUsers.get(creatorId)!;
 
     posts.set(id, {
       id,
       title,
       creatorId,
+      creatorUsername: creator.username,
+      creatorDisplayName: creator.displayName,
       createdAt,
       updatedAt: createdAt,
       deletedAt: null,

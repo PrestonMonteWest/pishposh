@@ -13,6 +13,8 @@ export interface Post {
   id: string;
   title: string;
   creatorId: string;
+  creatorUsername: string;
+  creatorDisplayName: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
