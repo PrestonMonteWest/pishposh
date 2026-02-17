@@ -1,3 +1,7 @@
+import type { Selectable } from 'kysely';
+import { getDb } from '../db/connection.js';
+import type { UsersTable, RefreshTokensTable } from '../db/types.js';
+
 export interface User {
   id: string;
   email: string;
@@ -23,87 +27,60 @@ export interface RefreshToken {
   expiresAt: Date;
 }
 
-// JSON file-backed storage (replace with database in production)
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = resolve(__dirname, '../../data');
-const USERS_FILE = resolve(DATA_DIR, 'users.json');
-const TOKENS_FILE = resolve(DATA_DIR, 'refresh-tokens.json');
-
-interface StoredRefreshToken {
-  token: string;
-  userId: string;
-  expiresAt: string;
+function dbRowToUser(row: Selectable<UsersTable>): User {
+  return {
+    id: row.id,
+    email: row.email,
+    username: row.username,
+    displayName: row.display_name,
+    avatarUrl: row.avatar_url ?? undefined,
+    passwordHash: row.password_hash,
+    createdAt: (row.created_at as Date).toISOString(),
+  };
 }
 
-function ensureDataDir(): void {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true });
-  }
+export async function findUserById(id: string): Promise<User | undefined> {
+  const row = await getDb()
+    .selectFrom('users')
+    .selectAll()
+    .where('id', '=', id)
+    .executeTakeFirst();
+  return row ? dbRowToUser(row) : undefined;
 }
 
-function loadUsers(): Map<string, User> {
-  if (!existsSync(USERS_FILE)) return new Map();
-  try {
-    const data = JSON.parse(readFileSync(USERS_FILE, 'utf-8')) as [string, User][];
-    return new Map(data);
-  } catch {
-    return new Map();
-  }
+export async function findUserByEmail(email: string): Promise<User | undefined> {
+  const row = await getDb()
+    .selectFrom('users')
+    .selectAll()
+    .where('email', '=', email)
+    .executeTakeFirst();
+  return row ? dbRowToUser(row) : undefined;
 }
 
-function saveUsers(users: Map<string, User>): void {
-  ensureDataDir();
-  writeFileSync(USERS_FILE, JSON.stringify([...users.entries()], null, 2));
+export async function findUserByUsername(username: string): Promise<User | undefined> {
+  const row = await getDb()
+    .selectFrom('users')
+    .selectAll()
+    .where('username', '=', username)
+    .executeTakeFirst();
+  return row ? dbRowToUser(row) : undefined;
 }
 
-function loadRefreshTokens(): Map<string, RefreshToken> {
-  if (!existsSync(TOKENS_FILE)) return new Map();
-  try {
-    const data = JSON.parse(readFileSync(TOKENS_FILE, 'utf-8')) as [string, StoredRefreshToken][];
-    return new Map(
-      data.map(([key, val]) => [key, { ...val, expiresAt: new Date(val.expiresAt) }])
-    );
-  } catch {
-    return new Map();
-  }
-}
-
-function saveRefreshTokens(tokens: Map<string, RefreshToken>): void {
-  ensureDataDir();
-  writeFileSync(TOKENS_FILE, JSON.stringify([...tokens.entries()], null, 2));
-}
-
-export function findUserById(id: string): User | undefined {
-  return loadUsers().get(id);
-}
-
-export function findUserByEmail(email: string): User | undefined {
-  for (const user of loadUsers().values()) {
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      return user;
-    }
-  }
-  return undefined;
-}
-
-export function findUserByUsername(username: string): User | undefined {
-  for (const user of loadUsers().values()) {
-    if (user.username.toLowerCase() === username.toLowerCase()) {
-      return user;
-    }
-  }
-  return undefined;
-}
-
-export function createUser(user: User): User {
-  const users = loadUsers();
-  users.set(user.id, user);
-  saveUsers(users);
-  return user;
+export async function createUser(user: User): Promise<User> {
+  const row = await getDb()
+    .insertInto('users')
+    .values({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      display_name: user.displayName,
+      avatar_url: user.avatarUrl ?? null,
+      password_hash: user.passwordHash,
+      created_at: user.createdAt,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow();
+  return dbRowToUser(row);
 }
 
 export function toPublicUser(user: User): PublicUser {
@@ -111,28 +88,41 @@ export function toPublicUser(user: User): PublicUser {
   return publicUser;
 }
 
-export function storeRefreshToken(token: RefreshToken): void {
-  const tokens = loadRefreshTokens();
-  tokens.set(token.token, token);
-  saveRefreshTokens(tokens);
+export async function storeRefreshToken(token: RefreshToken): Promise<void> {
+  await getDb()
+    .insertInto('refresh_tokens')
+    .values({
+      token: token.token,
+      user_id: token.userId,
+      expires_at: token.expiresAt.toISOString(),
+    })
+    .execute();
 }
 
-export function findRefreshToken(token: string): RefreshToken | undefined {
-  return loadRefreshTokens().get(token);
+export async function findRefreshToken(token: string): Promise<RefreshToken | undefined> {
+  const row = await getDb()
+    .selectFrom('refresh_tokens')
+    .selectAll()
+    .where('token', '=', token)
+    .executeTakeFirst();
+  if (!row) return undefined;
+  return {
+    token: row.token,
+    userId: row.user_id,
+    expiresAt: row.expires_at as Date,
+  };
 }
 
-export function deleteRefreshToken(token: string): void {
-  const tokens = loadRefreshTokens();
-  tokens.delete(token);
-  saveRefreshTokens(tokens);
+export async function deleteRefreshToken(token: string): Promise<void> {
+  await getDb()
+    .deleteFrom('refresh_tokens')
+    .where('token', '=', token)
+    .execute();
 }
 
-export function deleteUserRefreshTokens(userId: string): void {
-  const tokens = loadRefreshTokens();
-  for (const [token, data] of tokens.entries()) {
-    if (data.userId === userId) {
-      tokens.delete(token);
-    }
-  }
-  saveRefreshTokens(tokens);
+export async function deleteUserRefreshTokens(userId: string): Promise<void> {
+  await getDb()
+    .deleteFrom('refresh_tokens')
+    .where('user_id', '=', userId)
+    .execute();
 }

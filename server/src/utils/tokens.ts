@@ -33,11 +33,11 @@ export function generateAccessToken(payload: TokenPayload): string {
   });
 }
 
-export function generateRefreshToken(userId: string): string {
+export async function generateRefreshToken(userId: string): Promise<string> {
   const token = uuidv4();
   const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS);
 
-  storeRefreshToken({
+  await storeRefreshToken({
     token,
     userId,
     expiresAt,
@@ -46,10 +46,10 @@ export function generateRefreshToken(userId: string): string {
   return token;
 }
 
-export function generateTokens(payload: TokenPayload): AuthTokens {
+export async function generateTokens(payload: TokenPayload): Promise<AuthTokens> {
   return {
     accessToken: generateAccessToken(payload),
-    refreshToken: generateRefreshToken(payload.userId),
+    refreshToken: await generateRefreshToken(payload.userId),
     expiresIn: 900, // 15 minutes in seconds
     tokenType: 'Bearer',
   };
@@ -63,21 +63,21 @@ export function verifyAccessToken(token: string): TokenPayload | null {
   }
 }
 
-export function verifyRefreshToken(token: string): RefreshToken | null {
-  const storedToken = findRefreshToken(token);
+export async function verifyRefreshToken(token: string): Promise<RefreshToken | null> {
+  const storedToken = await findRefreshToken(token);
 
   if (!storedToken) {
     return null;
   }
 
   if (new Date() > storedToken.expiresAt) {
-    deleteRefreshToken(token);
+    await deleteRefreshToken(token);
     return null;
   }
 
   return storedToken;
 }
 
-export function revokeRefreshToken(token: string): void {
-  deleteRefreshToken(token);
+export async function revokeRefreshToken(token: string): Promise<void> {
+  await deleteRefreshToken(token);
 }

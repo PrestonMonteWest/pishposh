@@ -109,13 +109,21 @@ export function CreatePost() {
             <label className="block text-sm text-gray-400 mb-1">
               Media Attachments
             </label>
-            <input
-              type="file"
-              accept={ACCEPTED_TYPES}
-              multiple
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-pink-500 hover:file:bg-gray-700"
-            />
+            <label className="inline-flex items-center py-2 px-4 rounded bg-gray-800 text-pink-500 text-sm font-semibold hover:bg-gray-700 cursor-pointer transition-colors">
+              Choose Files
+              <input
+                type="file"
+                accept={ACCEPTED_TYPES}
+                multiple
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+            {files.length > 0 && (
+              <span className="ml-3 text-sm text-gray-400">
+                {files.length} file{files.length !== 1 ? 's' : ''} selected
+              </span>
+            )}
             {files.length > 0 && (
               <ul className="mt-3 space-y-2">
                 {files.map((file, index) => (

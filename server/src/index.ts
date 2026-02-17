@@ -3,6 +3,7 @@ import cors from 'cors';
 import oauthRoutes from './routes/oauth.js';
 import usersRoutes from './routes/users.js';
 import postsRoutes from './routes/posts.js';
+import { closeDb } from './db/connection.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -42,7 +43,19 @@ app.use(
   }
 );
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`API endpoints available at http://localhost:${PORT}/api`);
 });
+
+async function shutdown() {
+  console.log('\nShutting down gracefully...');
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
+  await closeDb();
+  process.exit(0);
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

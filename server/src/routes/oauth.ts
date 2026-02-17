@@ -40,7 +40,7 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 
     // Check for existing user
-    if (findUserByEmail(email)) {
+    if (await findUserByEmail(email)) {
       res.status(409).json({
         message: 'Email already registered',
         code: 'EMAIL_EXISTS',
@@ -48,7 +48,7 @@ router.post('/register', async (req: Request, res: Response) => {
       return;
     }
 
-    if (findUserByUsername(username)) {
+    if (await findUserByUsername(username)) {
       res.status(409).json({
         message: 'Username already taken',
         code: 'USERNAME_EXISTS',
@@ -58,7 +58,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
     // Create user
     const passwordHash = await hashPassword(password);
-    const user = createUser({
+    const user = await createUser({
       id: uuidv4(),
       email: email.toLowerCase(),
       username: username.toLowerCase(),
@@ -68,7 +68,7 @@ router.post('/register', async (req: Request, res: Response) => {
     });
 
     // Generate tokens
-    const tokens = generateTokens({ userId: user.id, email: user.email });
+    const tokens = await generateTokens({ userId: user.id, email: user.email });
 
     res.status(201).json({
       user: toPublicUser(user),
@@ -98,7 +98,7 @@ router.post('/token', async (req: Request, res: Response) => {
         return;
       }
 
-      const user = findUserByEmail(email);
+      const user = await findUserByEmail(email);
       if (!user) {
         res.status(401).json({
           message: 'Invalid email or password',
@@ -116,7 +116,7 @@ router.post('/token', async (req: Request, res: Response) => {
         return;
       }
 
-      const tokens = generateTokens({ userId: user.id, email: user.email });
+      const tokens = await generateTokens({ userId: user.id, email: user.email });
 
       res.json({
         user: toPublicUser(user),
@@ -132,7 +132,7 @@ router.post('/token', async (req: Request, res: Response) => {
         return;
       }
 
-      const storedToken = verifyRefreshToken(refresh_token);
+      const storedToken = await verifyRefreshToken(refresh_token);
       if (!storedToken) {
         res.status(401).json({
           message: 'Invalid or expired refresh token',
@@ -141,7 +141,7 @@ router.post('/token', async (req: Request, res: Response) => {
         return;
       }
 
-      const user = findUserById(storedToken.userId);
+      const user = await findUserById(storedToken.userId);
       if (!user) {
         res.status(401).json({
           message: 'User not found',
@@ -151,8 +151,8 @@ router.post('/token', async (req: Request, res: Response) => {
       }
 
       // Revoke old refresh token and generate new tokens
-      revokeRefreshToken(refresh_token);
-      const tokens = generateTokens({ userId: user.id, email: user.email });
+      await revokeRefreshToken(refresh_token);
+      const tokens = await generateTokens({ userId: user.id, email: user.email });
 
       res.json({ tokens });
     } else {
@@ -171,12 +171,12 @@ router.post('/token', async (req: Request, res: Response) => {
 });
 
 // POST /oauth/revoke - Revoke refresh token (logout)
-router.post('/revoke', authenticateToken, (req: Request, res: Response) => {
+router.post('/revoke', authenticateToken, async (req: Request, res: Response) => {
   try {
     const { refresh_token } = req.body;
 
     if (refresh_token) {
-      revokeRefreshToken(refresh_token);
+      await revokeRefreshToken(refresh_token);
     }
 
     res.status(200).json({ message: 'Token revoked' });

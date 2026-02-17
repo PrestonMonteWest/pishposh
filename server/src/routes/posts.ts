@@ -17,16 +17,16 @@ const ALLOWED_MIME_TYPES = new Set([
   'video/webm',
 ]);
 
-router.get('/', authenticateToken, (req: Request, res: Response) => {
+router.get('/', authenticateToken, async (req: Request, res: Response) => {
   const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : null;
   const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 20, 1), 50);
-  const result = findPostsPaginated(cursor, limit);
+  const result = await findPostsPaginated(cursor, limit);
   res.json(result);
 });
 
-router.get('/:id', authenticateToken, (req: Request, res: Response) => {
+router.get('/:id', authenticateToken, async (req: Request, res: Response) => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const post = findPostById(id);
+  const post = await findPostById(id);
   if (!post || post.deletedAt) {
     res.status(404).json({ message: 'Post not found', code: 'NOT_FOUND' });
     return;
@@ -34,7 +34,7 @@ router.get('/:id', authenticateToken, (req: Request, res: Response) => {
   res.json({ post });
 });
 
-router.post('/', authenticateToken, (req: Request, res: Response) => {
+router.post('/', authenticateToken, async (req: Request, res: Response) => {
   const { title, content, media } = req.body;
 
   if (!title || typeof title !== 'string' || !title.trim()) {
@@ -59,9 +59,9 @@ router.post('/', authenticateToken, (req: Request, res: Response) => {
     }
   }
 
-  const creator = findUserById(req.user!.userId);
+  const creator = await findUserById(req.user!.userId);
   const now = new Date().toISOString();
-  const post = createPost({
+  const post = await createPost({
     id: randomUUID(),
     title: title.trim(),
     content: content.trim(),

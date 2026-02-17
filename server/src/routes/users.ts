@@ -5,7 +5,7 @@ import { findUserById, toPublicUser } from '../models/user.js';
 const router = Router();
 
 // GET /users/me - Get current user profile
-router.get('/me', authenticateToken, (req: Request, res: Response) => {
+router.get('/me', authenticateToken, async (req: Request, res: Response) => {
   const userId = req.user?.userId;
 
   if (!userId) {
@@ -16,7 +16,7 @@ router.get('/me', authenticateToken, (req: Request, res: Response) => {
     return;
   }
 
-  const user = findUserById(userId);
+  const user = await findUserById(userId);
 
   if (!user) {
     res.status(404).json({

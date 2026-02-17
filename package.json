@@ -12,7 +12,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start:server": "node server/dist/index.js",
-    "seed:posts": "tsx server/scripts/seed-posts.ts"
+    "seed:posts": "tsx server/scripts/seed-posts.ts",
+    "db:migrate": "tsx server/scripts/migrate.ts",
+    "db:seed": "tsx server/scripts/seed-posts.ts",
+    "db:import": "tsx server/scripts/import-json-data.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -20,6 +24,8 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "kysely": "^0.28.11",
+    "pg": "^8.18.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
@@ -31,20 +37,21 @@
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/uuid": "^10.0.0",
-    "concurrently": "^9.1.2",
-    "tsx": "^4.20.3",
-    "typescript": "^5.7.0",
+    "@types/pg": "^8.16.0",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.24",
+    "concurrently": "^9.1.2",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
+    "tsx": "^4.20.3",
+    "typescript": "^5.7.0",
     "vite": "^7.2.4"
   }
 }

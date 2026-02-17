@@ -1,24 +1,13 @@
 import { randomUUID } from 'crypto';
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
-import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
 import { hashSync } from 'bcryptjs';
+import { getDb, closeDb } from '../src/db/connection.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = resolve(__dirname, '../data');
-const POSTS_FILE = resolve(DATA_DIR, 'posts.json');
-const USERS_FILE = resolve(DATA_DIR, 'users.json');
-
-interface User {
-  id: string;
-  email: string;
+interface SeedUser {
   username: string;
   displayName: string;
-  passwordHash: string;
-  createdAt: string;
 }
 
-const SEED_USERS: { username: string; displayName: string }[] = [
+const SEED_USERS: SeedUser[] = [
   { username: 'luna_writes', displayName: 'Luna' },
   { username: 'maxcooks', displayName: 'Max Chen' },
   { username: 'outdoorskid', displayName: 'Jamie Rivera' },
@@ -89,78 +78,84 @@ const SAMPLE_POSTS: { title: string; content: string }[] = [
   { title: 'Life update: things are good', content: 'Nothing dramatic. No big news. Just a quiet Tuesday where everything felt okay. Those days deserve recognition too.' },
 ];
 
-function generateSeed() {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true });
-  }
-
-  // Load existing users so we don't clobber real accounts
-  let existingUsers = new Map<string, User>();
-  if (existsSync(USERS_FILE)) {
-    try {
-      const data = JSON.parse(readFileSync(USERS_FILE, 'utf-8')) as [string, User][];
-      existingUsers = new Map(data);
-    } catch { /* ignore */ }
-  }
-
-  // Create seed users
-  const seedUserIds: string[] = [];
+async function generateSeed() {
+  const db = getDb();
   const passwordHash = hashSync('password123', 10);
 
+  // Upsert seed users
+  const seedUserIds: string[] = [];
+
   for (const { username, displayName } of SEED_USERS) {
-    // Skip if a user with this username already exists
-    let found = false;
-    for (const u of existingUsers.values()) {
-      if (u.username === username) {
-        seedUserIds.push(u.id);
-        found = true;
-        break;
-      }
+    const existing = await db
+      .selectFrom('users')
+      .select('id')
+      .where('username', '=', username)
+      .executeTakeFirst();
+
+    if (existing) {
+      seedUserIds.push(existing.id);
+      continue;
     }
-    if (found) continue;
 
     const id = randomUUID();
     seedUserIds.push(id);
-    existingUsers.set(id, {
-      id,
-      email: `${username}@example.com`,
-      username,
-      displayName,
-      passwordHash,
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    await db
+      .insertInto('users')
+      .values({
+        id,
+        email: `${username}@example.com`,
+        username,
+        display_name: displayName,
+        avatar_url: null,
+        password_hash: passwordHash,
+        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      .execute();
   }
 
-  writeFileSync(USERS_FILE, JSON.stringify([...existingUsers.entries()], null, 2));
-  console.log(`Users file now has ${existingUsers.size} users (${seedUserIds.length} seed users)`);
+  console.log(`${seedUserIds.length} seed users ready`);
 
-  // Generate posts distributed across seed users
-  const posts = new Map<string, object>();
+  // Get user info for denormalized fields
+  const seedUsers = await db
+    .selectFrom('users')
+    .selectAll()
+    .where('id', 'in', seedUserIds)
+    .execute();
+  const userMap = new Map(seedUsers.map((u) => [u.id, u]));
+
+  // Insert posts
   const now = Date.now();
+  let inserted = 0;
 
   for (let i = 0; i < SAMPLE_POSTS.length; i++) {
     const { title, content } = SAMPLE_POSTS[i];
     const createdAt = new Date(now - i * 30 * 60 * 1000).toISOString();
     const id = randomUUID();
     const creatorId = seedUserIds[i % seedUserIds.length];
-    const creator = existingUsers.get(creatorId)!;
+    const creator = userMap.get(creatorId)!;
 
-    posts.set(id, {
-      id,
-      title,
-      creatorId,
-      creatorUsername: creator.username,
-      creatorDisplayName: creator.displayName,
-      createdAt,
-      updatedAt: createdAt,
-      deletedAt: null,
-      content,
-      media: [],
-    });
+    await db
+      .insertInto('posts')
+      .values({
+        id,
+        title,
+        content,
+        creator_id: creatorId,
+        creator_username: creator.username,
+        creator_display_name: creator.display_name,
+        created_at: createdAt,
+        updated_at: createdAt,
+        deleted_at: null,
+      })
+      .execute();
+    inserted++;
   }
 
-  writeFileSync(POSTS_FILE, JSON.stringify([...posts.entries()], null, 2));
-  console.log(`Seeded ${posts.size} posts across ${seedUserIds.length} users to ${POSTS_FILE}`);
+  console.log(`Seeded ${inserted} posts across ${seedUserIds.length} users`);
+  await closeDb();
 }
 
-generateSeed();
+generateSeed().catch((err) => {
+  console.error('Seed failed:', err);
+  closeDb().then(() => process.exit(1));
+});
