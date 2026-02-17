@@ -116,9 +116,10 @@ export function Home() {
         {posts.length > 0 && (
           <div className="space-y-4">
             {posts.map((post) => (
-              <article
+              <Link
                 key={post.id}
-                className="border border-gray-800 rounded-lg p-5"
+                to={`/post/${post.id}`}
+                className="block border border-gray-800 rounded-lg p-5 hover:border-gray-700 transition-colors"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-sm font-medium text-pink-400">@{post.creatorUsername}</span>
@@ -127,7 +128,7 @@ export function Home() {
                 </div>
                 <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
                 <p className="text-gray-300 whitespace-pre-wrap">{post.content}</p>
-              </article>
+              </Link>
             ))}
           </div>
         )}

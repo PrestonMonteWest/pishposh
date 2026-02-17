@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { randomUUID } from 'crypto';
 import { authenticateToken } from '../middleware/auth.js';
-import { createPost, findPostsPaginated } from '../models/post.js';
+import { createPost, findPostById, findPostsPaginated } from '../models/post.js';
 import { findUserById } from '../models/user.js';
 
 
@@ -22,6 +22,16 @@ router.get('/', authenticateToken, (req: Request, res: Response) => {
   const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 20, 1), 50);
   const result = findPostsPaginated(cursor, limit);
   res.json(result);
+});
+
+router.get('/:id', authenticateToken, (req: Request, res: Response) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const post = findPostById(id);
+  if (!post || post.deletedAt) {
+    res.status(404).json({ message: 'Post not found', code: 'NOT_FOUND' });
+    return;
+  }
+  res.json({ post });
 });
 
 router.post('/', authenticateToken, (req: Request, res: Response) => {

@@ -1,8 +1,25 @@
 import type { AuthTokens } from '../types/auth';
-import type { CreatePostRequest, CreatePostResponse, PostsPage } from '../types/post';
+import type { Post, CreatePostRequest, CreatePostResponse, PostsPage } from '../types/post';
 import { getAuthHeader } from './auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+export async function fetchPost(
+  tokens: AuthTokens,
+  id: string
+): Promise<Post> {
+  const response = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(id)}`, {
+    headers: getAuthHeader(tokens),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Request failed' }));
+    throw new Error(error.message || 'Failed to fetch post');
+  }
+
+  const data = await response.json();
+  return data.post;
+}
 
 export async function fetchPosts(
   tokens: AuthTokens,
