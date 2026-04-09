@@ -1,7 +1,7 @@
 {
   "name": "pishposh",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,6 @@
     "build": "tsc && vite build",
     "build:server": "tsc -p server/tsconfig.json",
     "lint": "eslint .",
-    "preview": "vite preview",
     "start:server": "node server/dist/index.js",
     "seed:posts": "tsx server/scripts/seed-posts.ts",
     "db:migrate": "tsx server/scripts/migrate.ts",
@@ -19,7 +18,6 @@
     "db:setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.18",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
@@ -33,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
@@ -49,6 +48,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "postcss": "^8.5.6",
+    "prettier": "^3.8.1",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.20.3",
     "typescript": "^5.7.0",

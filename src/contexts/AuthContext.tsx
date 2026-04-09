@@ -6,123 +6,131 @@ import {
   useCallback,
   useRef,
   type ReactNode,
-} from 'react';
+} from 'react'
 import type {
   User,
   AuthTokens,
   AuthState,
   LoginCredentials,
   SignupCredentials,
-} from '../types/auth';
-import * as authService from '../services/auth';
+} from '../types/auth'
+import * as authService from '../services/auth'
 
 interface AuthContextValue extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  signup: (credentials: SignupCredentials) => Promise<void>;
-  logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>
+  signup: (credentials: SignupCredentials) => Promise<void>
+  logout: () => Promise<void>
+  refreshToken: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
+  return context
 }
 
 interface AuthProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [tokens, setTokens] = useState<AuthTokens | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null)
+  const [tokens, setTokens] = useState<AuthTokens | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const isAuthenticated = !!user && !!tokens;
+  const isAuthenticated = !!user && !!tokens
 
-  const initRef = useRef(false);
+  const initRef = useRef(false)
 
   useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
+    if (initRef.current) return
+    initRef.current = true
 
     const initAuth = async () => {
-      const storedTokens = authService.getStoredTokens();
+      const storedTokens = authService.getStoredTokens()
 
       if (!storedTokens) {
-        setIsLoading(false);
-        return;
+        setIsLoading(false)
+        return
       }
 
       try {
         if (authService.isTokenExpired(storedTokens)) {
-          const newTokens = await authService.refreshAccessToken(storedTokens.refreshToken);
-          setTokens(newTokens);
-          const currentUser = await authService.getCurrentUser(newTokens.accessToken);
-          setUser(currentUser);
+          const newTokens = await authService.refreshAccessToken(
+            storedTokens.refreshToken,
+          )
+          setTokens(newTokens)
+          const currentUser = await authService.getCurrentUser(
+            newTokens.accessToken,
+          )
+          setUser(currentUser)
         } else {
-          setTokens(storedTokens);
-          const currentUser = await authService.getCurrentUser(storedTokens.accessToken);
-          setUser(currentUser);
+          setTokens(storedTokens)
+          const currentUser = await authService.getCurrentUser(
+            storedTokens.accessToken,
+          )
+          setUser(currentUser)
         }
       } catch (error) {
-        authService.clearTokens();
-        setUser(null);
-        setTokens(null);
+        authService.clearTokens()
+        setUser(null)
+        setTokens(null)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    initAuth();
-  }, []);
+    initAuth()
+  }, [])
 
   const login = useCallback(async (credentials: LoginCredentials) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const response = await authService.login(credentials);
-      setUser(response.user);
-      setTokens(response.tokens);
+      const response = await authService.login(credentials)
+      setUser(response.user)
+      setTokens(response.tokens)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, []);
+  }, [])
 
   const signup = useCallback(async (credentials: SignupCredentials) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const response = await authService.signup(credentials);
-      setUser(response.user);
-      setTokens(response.tokens);
+      const response = await authService.signup(credentials)
+      setUser(response.user)
+      setTokens(response.tokens)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, []);
+  }, [])
 
   const logout = useCallback(async () => {
     if (tokens?.accessToken) {
-      await authService.logout(tokens.accessToken);
+      await authService.logout(tokens.accessToken)
     }
-    setUser(null);
-    setTokens(null);
-  }, [tokens]);
+    setUser(null)
+    setTokens(null)
+  }, [tokens])
 
   const refreshToken = useCallback(async () => {
-    if (!tokens?.refreshToken) return;
+    if (!tokens?.refreshToken) return
 
     try {
-      const newTokens = await authService.refreshAccessToken(tokens.refreshToken);
-      setTokens(newTokens);
+      const newTokens = await authService.refreshAccessToken(
+        tokens.refreshToken,
+      )
+      setTokens(newTokens)
     } catch {
-      setUser(null);
-      setTokens(null);
-      authService.clearTokens();
+      setUser(null)
+      setTokens(null)
+      authService.clearTokens()
     }
-  }, [tokens]);
+  }, [tokens])
 
   const value: AuthContextValue = {
     user,
@@ -133,7 +141,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signup,
     logout,
     refreshToken,
-  };
+  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

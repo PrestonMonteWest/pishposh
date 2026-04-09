@@ -1,6 +1,6 @@
 # PishPosh
 
-A free, open-alternative TikTok clone built with React and TypeScript. PishPosh aims to replicate the core TikTok experience and make it freely available to everyone.
+A free TikTok alternative built with React and TypeScript. PishPosh aims to replicate the core TikTok experience and make it freely available to everyone.
 
 ## Platforms
 
@@ -29,18 +29,20 @@ A free, open-alternative TikTok clone built with React and TypeScript. PishPosh 
 # Install dependencies
 npm install
 
-# Start development server
-npm run dev
+# Start front- and backend servers
+npm run dev:all
 ```
 
 ### Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run lint` | Run ESLint |
+| Command                | Description                      |
+| ---------------------- | -------------------------------- |
+| `npm run dev`          | Start frontend server            |
+| `npm run dev:server`   | Start backend server             |
+| `npm run dev:all`      | Start front- and backend servers |
+| `npm run build`        | Build frontend for production    |
+| `npm run build:server` | Build backend for production     |
+| `npm run lint`         | Run ESLint                       |
 
 ## License
 

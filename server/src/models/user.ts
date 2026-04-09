@@ -1,30 +1,30 @@
-import type { Selectable } from 'kysely';
-import { getDb } from '../db/connection.js';
-import type { UsersTable, RefreshTokensTable } from '../db/types.js';
+import type { Selectable } from 'kysely'
+import { getDb } from '../db/connection.js'
+import type { UsersTable } from '../db/types.js'
 
 export interface User {
-  id: string;
-  email: string;
-  username: string;
-  displayName: string;
-  avatarUrl?: string;
-  passwordHash: string;
-  createdAt: string;
+  id: string
+  email: string
+  username: string
+  displayName: string
+  avatarUrl?: string
+  passwordHash: string
+  createdAt: string
 }
 
 export interface PublicUser {
-  id: string;
-  email: string;
-  username: string;
-  displayName: string;
-  avatarUrl?: string;
-  createdAt: string;
+  id: string
+  email: string
+  username: string
+  displayName: string
+  avatarUrl?: string
+  createdAt: string
 }
 
 export interface RefreshToken {
-  token: string;
-  userId: string;
-  expiresAt: Date;
+  token: string
+  userId: string
+  expiresAt: Date
 }
 
 function dbRowToUser(row: Selectable<UsersTable>): User {
@@ -36,7 +36,7 @@ function dbRowToUser(row: Selectable<UsersTable>): User {
     avatarUrl: row.avatar_url ?? undefined,
     passwordHash: row.password_hash,
     createdAt: (row.created_at as Date).toISOString(),
-  };
+  }
 }
 
 export async function findUserById(id: string): Promise<User | undefined> {
@@ -44,26 +44,30 @@ export async function findUserById(id: string): Promise<User | undefined> {
     .selectFrom('users')
     .selectAll()
     .where('id', '=', id)
-    .executeTakeFirst();
-  return row ? dbRowToUser(row) : undefined;
+    .executeTakeFirst()
+  return row ? dbRowToUser(row) : undefined
 }
 
-export async function findUserByEmail(email: string): Promise<User | undefined> {
+export async function findUserByEmail(
+  email: string,
+): Promise<User | undefined> {
   const row = await getDb()
     .selectFrom('users')
     .selectAll()
     .where('email', '=', email)
-    .executeTakeFirst();
-  return row ? dbRowToUser(row) : undefined;
+    .executeTakeFirst()
+  return row ? dbRowToUser(row) : undefined
 }
 
-export async function findUserByUsername(username: string): Promise<User | undefined> {
+export async function findUserByUsername(
+  username: string,
+): Promise<User | undefined> {
   const row = await getDb()
     .selectFrom('users')
     .selectAll()
     .where('username', '=', username)
-    .executeTakeFirst();
-  return row ? dbRowToUser(row) : undefined;
+    .executeTakeFirst()
+  return row ? dbRowToUser(row) : undefined
 }
 
 export async function createUser(user: User): Promise<User> {
@@ -79,13 +83,13 @@ export async function createUser(user: User): Promise<User> {
       created_at: user.createdAt,
     })
     .returningAll()
-    .executeTakeFirstOrThrow();
-  return dbRowToUser(row);
+    .executeTakeFirstOrThrow()
+  return dbRowToUser(row)
 }
 
 export function toPublicUser(user: User): PublicUser {
-  const { passwordHash, ...publicUser } = user;
-  return publicUser;
+  const { passwordHash, ...publicUser } = user
+  return publicUser
 }
 
 export async function storeRefreshToken(token: RefreshToken): Promise<void> {
@@ -96,33 +100,35 @@ export async function storeRefreshToken(token: RefreshToken): Promise<void> {
       user_id: token.userId,
       expires_at: token.expiresAt.toISOString(),
     })
-    .execute();
+    .execute()
 }
 
-export async function findRefreshToken(token: string): Promise<RefreshToken | undefined> {
+export async function findRefreshToken(
+  token: string,
+): Promise<RefreshToken | undefined> {
   const row = await getDb()
     .selectFrom('refresh_tokens')
     .selectAll()
     .where('token', '=', token)
-    .executeTakeFirst();
-  if (!row) return undefined;
+    .executeTakeFirst()
+  if (!row) return undefined
   return {
     token: row.token,
     userId: row.user_id,
     expiresAt: row.expires_at as Date,
-  };
+  }
 }
 
 export async function deleteRefreshToken(token: string): Promise<void> {
   await getDb()
     .deleteFrom('refresh_tokens')
     .where('token', '=', token)
-    .execute();
+    .execute()
 }
 
 export async function deleteUserRefreshTokens(userId: string): Promise<void> {
   await getDb()
     .deleteFrom('refresh_tokens')
     .where('user_id', '=', userId)
-    .execute();
+    .execute()
 }

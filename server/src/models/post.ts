@@ -1,36 +1,36 @@
-import type { Selectable } from 'kysely';
-import { getDb } from '../db/connection.js';
-import type { PostsTable } from '../db/types.js';
+import type { Selectable } from 'kysely'
+import { getDb } from '../db/connection.js'
+import type { PostsTable } from '../db/types.js'
 
 export interface MediaAttachment {
-  id: string;
-  uri: string;
-  mimeType: string;
-  filename: string;
+  id: string
+  uri: string
+  mimeType: string
+  filename: string
 }
 
 export interface Post {
-  id: string;
-  title: string;
-  creatorId: string;
-  creatorUsername: string;
-  creatorDisplayName: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  content: string;
-  media: MediaAttachment[];
+  id: string
+  title: string
+  creatorId: string
+  creatorUsername: string
+  creatorDisplayName: string
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+  content: string
+  media: MediaAttachment[]
 }
 
 export interface PaginatedPosts {
-  posts: Post[];
-  nextCursor: string | null;
-  hasMore: boolean;
+  posts: Post[]
+  nextCursor: string | null
+  hasMore: boolean
 }
 
 function dbRowToPost(
   row: Selectable<PostsTable>,
-  media: MediaAttachment[]
+  media: MediaAttachment[],
 ): Post {
   return {
     id: row.id,
@@ -43,7 +43,7 @@ function dbRowToPost(
     updatedAt: (row.updated_at as Date).toISOString(),
     deletedAt: row.deleted_at ? (row.deleted_at as Date).toISOString() : null,
     media,
-  };
+  }
 }
 
 async function fetchMediaForPost(postId: string): Promise<MediaAttachment[]> {
@@ -52,43 +52,43 @@ async function fetchMediaForPost(postId: string): Promise<MediaAttachment[]> {
     .selectAll()
     .where('post_id', '=', postId)
     .orderBy('display_order', 'asc')
-    .execute();
+    .execute()
   return rows.map((r) => ({
     id: r.id,
     uri: r.uri,
     mimeType: r.mime_type,
     filename: r.filename,
-  }));
+  }))
 }
 
 async function fetchMediaForPosts(
-  postIds: string[]
+  postIds: string[],
 ): Promise<Map<string, MediaAttachment[]>> {
-  if (postIds.length === 0) return new Map();
+  if (postIds.length === 0) return new Map()
   const rows = await getDb()
     .selectFrom('media_attachments')
     .selectAll()
     .where('post_id', 'in', postIds)
     .orderBy('post_id', 'asc')
     .orderBy('display_order', 'asc')
-    .execute();
+    .execute()
 
-  const map = new Map<string, MediaAttachment[]>();
+  const map = new Map<string, MediaAttachment[]>()
   for (const r of rows) {
-    const list = map.get(r.post_id) ?? [];
+    const list = map.get(r.post_id) ?? []
     list.push({
       id: r.id,
       uri: r.uri,
       mimeType: r.mime_type,
       filename: r.filename,
-    });
-    map.set(r.post_id, list);
+    })
+    map.set(r.post_id, list)
   }
-  return map;
+  return map
 }
 
 export async function createPost(post: Post): Promise<Post> {
-  const db = getDb();
+  const db = getDb()
   const row = await db
     .insertInto('posts')
     .values({
@@ -103,7 +103,7 @@ export async function createPost(post: Post): Promise<Post> {
       deleted_at: post.deletedAt,
     })
     .returningAll()
-    .executeTakeFirstOrThrow();
+    .executeTakeFirstOrThrow()
 
   if (post.media.length > 0) {
     await db
@@ -116,12 +116,12 @@ export async function createPost(post: Post): Promise<Post> {
           mime_type: m.mimeType,
           filename: m.filename,
           display_order: i,
-        }))
+        })),
       )
-      .execute();
+      .execute()
   }
 
-  return dbRowToPost(row, post.media);
+  return dbRowToPost(row, post.media)
 }
 
 export async function findPostById(id: string): Promise<Post | undefined> {
@@ -129,10 +129,10 @@ export async function findPostById(id: string): Promise<Post | undefined> {
     .selectFrom('posts')
     .selectAll()
     .where('id', '=', id)
-    .executeTakeFirst();
-  if (!row) return undefined;
-  const media = await fetchMediaForPost(id);
-  return dbRowToPost(row, media);
+    .executeTakeFirst()
+  if (!row) return undefined
+  const media = await fetchMediaForPost(id)
+  return dbRowToPost(row, media)
 }
 
 export async function findPostsByUserId(userId: string): Promise<Post[]> {
@@ -142,35 +142,35 @@ export async function findPostsByUserId(userId: string): Promise<Post[]> {
     .where('creator_id', '=', userId)
     .where('deleted_at', 'is', null)
     .orderBy('created_at', 'desc')
-    .execute();
+    .execute()
 
-  const mediaMap = await fetchMediaForPosts(rows.map((r) => r.id));
-  return rows.map((r) => dbRowToPost(r, mediaMap.get(r.id) ?? []));
+  const mediaMap = await fetchMediaForPosts(rows.map((r) => r.id))
+  return rows.map((r) => dbRowToPost(r, mediaMap.get(r.id) ?? []))
 }
 
 export async function findPostsPaginated(
   cursor: string | null,
-  limit: number
+  limit: number,
 ): Promise<PaginatedPosts> {
   let query = getDb()
     .selectFrom('posts')
     .selectAll()
     .where('deleted_at', 'is', null)
     .orderBy('created_at', 'desc')
-    .limit(limit + 1);
+    .limit(limit + 1)
 
   if (cursor) {
-    query = query.where('created_at', '<', new Date(cursor));
+    query = query.where('created_at', '<', new Date(cursor))
   }
 
-  const rows = await query.execute();
-  const hasMore = rows.length > limit;
-  const pageRows = hasMore ? rows.slice(0, limit) : rows;
+  const rows = await query.execute()
+  const hasMore = rows.length > limit
+  const pageRows = hasMore ? rows.slice(0, limit) : rows
 
-  const mediaMap = await fetchMediaForPosts(pageRows.map((r) => r.id));
-  const posts = pageRows.map((r) => dbRowToPost(r, mediaMap.get(r.id) ?? []));
+  const mediaMap = await fetchMediaForPosts(pageRows.map((r) => r.id))
+  const posts = pageRows.map((r) => dbRowToPost(r, mediaMap.get(r.id) ?? []))
 
-  const nextCursor = hasMore ? posts[posts.length - 1].createdAt : null;
+  const nextCursor = hasMore ? posts[posts.length - 1].createdAt : null
 
-  return { posts, nextCursor, hasMore };
+  return { posts, nextCursor, hasMore }
 }

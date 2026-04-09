@@ -1,13 +1,14 @@
-import { Kysely, PostgresDialect } from 'kysely';
-import pg from 'pg';
-import type { Database } from './types.js';
+import { Kysely, PostgresDialect } from 'kysely'
+import pg from 'pg'
+import type { Database } from './types.js'
 
-let db: Kysely<Database> | null = null;
+let db: Kysely<Database> | null = null
 
 export function getDb(): Kysely<Database> {
   if (!db) {
     const connectionString =
-      process.env.DATABASE_URL || 'postgresql://pishposh:pishposh@localhost:5432/pishposh';
+      process.env.DATABASE_URL ||
+      'postgresql://pishposh:pishposh@localhost:5432/pishposh'
 
     db = new Kysely<Database>({
       dialect: new PostgresDialect({
@@ -16,15 +17,15 @@ export function getDb(): Kysely<Database> {
           max: 10,
         }),
       }),
-    });
+    })
   }
-  return db;
+  return db
 }
 
 export async function closeDb(): Promise<void> {
   if (db) {
-    await db.destroy();
-    db = null;
-    console.log('Database connection closed');
+    await db.destroy()
+    db = null
+    console.log('Database connection closed')
   }
 }

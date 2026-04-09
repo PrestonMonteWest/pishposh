@@ -1,38 +1,38 @@
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 export function Signup() {
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const { signup, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const { signup, isLoading } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+      setError('Passwords do not match')
+      return
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
+      setError('Password must be at least 8 characters')
+      return
     }
 
     try {
-      await signup({ email, username, displayName, password });
-      navigate('/');
+      await signup({ email, username, displayName, password })
+      navigate('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      setError(err instanceof Error ? err.message : 'Signup failed')
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
@@ -64,7 +64,10 @@ export function Signup() {
           </div>
 
           <div>
-            <label htmlFor="username" className="block text-sm text-gray-400 mb-1">
+            <label
+              htmlFor="username"
+              className="block text-sm text-gray-400 mb-1"
+            >
               Username
             </label>
             <input
@@ -79,7 +82,10 @@ export function Signup() {
           </div>
 
           <div>
-            <label htmlFor="displayName" className="block text-sm text-gray-400 mb-1">
+            <label
+              htmlFor="displayName"
+              className="block text-sm text-gray-400 mb-1"
+            >
               Display Name
             </label>
             <input
@@ -94,7 +100,10 @@ export function Signup() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm text-gray-400 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm text-gray-400 mb-1"
+            >
               Password
             </label>
             <input
@@ -109,7 +118,10 @@ export function Signup() {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm text-gray-400 mb-1">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm text-gray-400 mb-1"
+            >
               Confirm Password
             </label>
             <input
@@ -140,5 +152,5 @@ export function Signup() {
         </p>
       </div>
     </div>
-  );
+  )
 }

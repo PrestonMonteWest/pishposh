@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { fetchPost } from '../services/posts';
-import type { Post } from '../types/post';
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { fetchPost } from '../services/posts'
+import type { Post } from '../types/post'
 
 export function PostDetail() {
-  const { id } = useParams<{ id: string }>();
-  const { tokens } = useAuth();
-  const [post, setPost] = useState<Post | null>(null);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams<{ id: string }>()
+  const [post, setPost] = useState<Post | null>(null)
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!tokens || !id) return;
+    if (!id) return
 
-    fetchPost(tokens, id)
+    fetchPost(id)
       .then(setPost)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load post'))
-      .finally(() => setIsLoading(false));
-  }, [tokens, id]);
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : 'Failed to load post'),
+      )
+      .finally(() => setIsLoading(false))
+  }, [id])
 
   function formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString(undefined, {
@@ -27,7 +27,7 @@ export function PostDetail() {
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
-    });
+    })
   }
 
   return (
@@ -58,15 +58,21 @@ export function PostDetail() {
         {post && (
           <article>
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-sm font-medium text-pink-400">@{post.creatorUsername}</span>
+              <span className="text-sm font-medium text-pink-400">
+                @{post.creatorUsername}
+              </span>
               <span className="text-sm text-gray-600">&middot;</span>
-              <span className="text-sm text-gray-500">{formatDate(post.createdAt)}</span>
+              <span className="text-sm text-gray-500">
+                {formatDate(post.createdAt)}
+              </span>
             </div>
             <h2 className="text-2xl font-bold mb-4">{post.title}</h2>
-            <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+            <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+              {post.content}
+            </p>
           </article>
         )}
       </main>
     </div>
-  );
+  )
 }

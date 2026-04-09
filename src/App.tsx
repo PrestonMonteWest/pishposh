@@ -1,12 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { Home } from './pages/Home';
-import { Login } from './pages/Login';
-import { Signup } from './pages/Signup';
-import { CreatePost } from './pages/CreatePost';
-import { PostDetail } from './pages/PostDetail';
-import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { Home } from './pages/Home'
+import { Login } from './pages/Login'
+import { Signup } from './pages/Signup'
+import { CreatePost } from './pages/CreatePost'
+import { PostDetail } from './pages/PostDetail'
 
 export default function App() {
   return (
@@ -15,14 +14,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route
-            path="/post/:id"
-            element={
-              <ProtectedRoute>
-                <PostDetail />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/post/:id" element={<PostDetail />} />
           <Route
             path="/create"
             element={
@@ -31,16 +23,9 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<Home />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
-  );
+  )
 }

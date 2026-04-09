@@ -1,25 +1,25 @@
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 export function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const { login, isLoading } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
 
     try {
-      await login({ email, password });
-      navigate('/');
+      await login({ email, password })
+      navigate('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Login failed')
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
@@ -51,7 +51,10 @@ export function Login() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm text-gray-400 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm text-gray-400 mb-1"
+            >
               Password
             </label>
             <input
@@ -82,5 +85,5 @@ export function Login() {
         </p>
       </div>
     </div>
-  );
+  )
 }

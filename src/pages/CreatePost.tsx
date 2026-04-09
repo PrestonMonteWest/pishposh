@@ -1,42 +1,42 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { createPost } from '../services/posts';
-import type { MediaAttachment } from '../types/post';
+import { useState, type FormEvent, type ChangeEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { createPost } from '../services/posts'
+import type { MediaAttachment } from '../types/post'
 
-const ACCEPTED_TYPES = '.png,.gif,.jpg,.jpeg,.webp,.mp4,.mkv,.webm';
+const ACCEPTED_TYPES = '.png,.gif,.jpg,.jpeg,.webp,.mp4,.mkv,.webm'
 
 export function CreatePost() {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [files, setFiles] = useState<File[]>([]);
-  const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { tokens } = useAuth();
-  const navigate = useNavigate();
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [files, setFiles] = useState<File[]>([])
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { tokens } = useAuth()
+  const navigate = useNavigate()
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...newFiles]);
-      e.target.value = '';
+      const newFiles = Array.from(e.target.files)
+      setFiles((prev) => [...prev, ...newFiles])
+      e.target.value = ''
     }
-  };
+  }
 
   const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
+    setFiles((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
 
     if (!tokens) {
-      setError('You must be logged in to create a post');
-      return;
+      setError('You must be logged in to create a post')
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       const media: MediaAttachment[] = files.map((file) => ({
@@ -44,16 +44,16 @@ export function CreatePost() {
         uri: '',
         mimeType: file.type,
         filename: file.name,
-      }));
+      }))
 
-      await createPost(tokens, { title, content, media });
-      navigate('/');
+      await createPost(tokens, { title, content, media })
+      navigate('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create post');
+      setError(err instanceof Error ? err.message : 'Failed to create post')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -91,7 +91,10 @@ export function CreatePost() {
           </div>
 
           <div>
-            <label htmlFor="content" className="block text-sm text-gray-400 mb-1">
+            <label
+              htmlFor="content"
+              className="block text-sm text-gray-400 mb-1"
+            >
               Content
             </label>
             <textarea
@@ -131,7 +134,9 @@ export function CreatePost() {
                     key={`${file.name}-${index}`}
                     className="flex items-center justify-between bg-gray-900 border border-gray-700 rounded px-3 py-2"
                   >
-                    <span className="text-sm text-gray-300 truncate">{file.name}</span>
+                    <span className="text-sm text-gray-300 truncate">
+                      {file.name}
+                    </span>
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
@@ -163,5 +168,5 @@ export function CreatePost() {
         </form>
       </main>
     </div>
-  );
+  )
 }
