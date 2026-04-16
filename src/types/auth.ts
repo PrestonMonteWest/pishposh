@@ -31,6 +31,7 @@ export interface SignupCredentials {
   username: string
   password: string
   displayName: string
+  captchaToken: string
 }
 
 export interface AuthResponse {

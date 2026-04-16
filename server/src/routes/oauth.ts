@@ -15,12 +15,38 @@ import {
 } from '../models/user.js'
 import { authenticateToken } from '../middleware/auth.js'
 
+async function verifyCaptcha(token: string): Promise<boolean> {
+  console.log(process.env.TURNSTILE_SECRET_KEY)
+  const res = await fetch(
+    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: process.env.TURNSTILE_SECRET_KEY,
+        response: token,
+      }),
+    },
+  )
+
+  const data = await res.json()
+  return data.success
+}
+
 const router = Router()
 
 // POST /oauth/register - Create new user account
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { email, username, displayName, password } = req.body
+    const { email, username, displayName, password, captchaToken } = req.body
+
+    if (!captchaToken || !(await verifyCaptcha(captchaToken))) {
+      res.status(400).json({
+        message: 'Unable to verify your request. Please try again.',
+        code: 'VERIFICATION_FAILED',
+      })
+      return
+    }
 
     // Validation
     if (!email || !username || !displayName || !password) {

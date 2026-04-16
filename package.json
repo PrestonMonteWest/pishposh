@@ -1,7 +1,7 @@
 {
   "name": "pishposh",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,8 +18,10 @@
     "db:setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.5.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "kysely": "^0.28.11",

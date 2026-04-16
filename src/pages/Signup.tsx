@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 
 export function Signup() {
@@ -9,6 +10,7 @@ export function Signup() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const { signup, isLoading } = useAuth()
   const navigate = useNavigate()
 
@@ -27,7 +29,13 @@ export function Signup() {
     }
 
     try {
-      await signup({ email, username, displayName, password })
+      await signup({
+        email,
+        username,
+        displayName,
+        password,
+        captchaToken: captchaToken!,
+      })
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed')
@@ -135,9 +143,14 @@ export function Signup() {
             />
           </div>
 
+          <Turnstile
+            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+            onSuccess={(token) => setCaptchaToken(token)}
+          />
+
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !captchaToken}
             className="w-full py-3 bg-pink-500 hover:bg-pink-600 disabled:bg-pink-500/50 text-white font-semibold rounded transition-colors"
           >
             {isLoading ? 'Creating account...' : 'Sign up'}

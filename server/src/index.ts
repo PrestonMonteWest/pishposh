@@ -1,9 +1,13 @@
 import express from 'express'
 import cors from 'cors'
+import dotenv from 'dotenv'
+import path from 'path'
 import oauthRoutes from './routes/oauth.js'
 import usersRoutes from './routes/users.js'
 import postsRoutes from './routes/posts.js'
 import { closeDb } from './db/connection.js'
+
+dotenv.config({ path: path.resolve(import.meta.dirname, '../../.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3001
