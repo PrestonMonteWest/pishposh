@@ -1,6 +1,6 @@
 # PishPosh
 
-A free TikTok alternative built with React and TypeScript. PishPosh aims to replicate the core TikTok experience and make it freely available to everyone.
+A free and open-source social media platform built with React and TypeScript. PishPosh aims to replicate the core social media experience.
 
 ## Platforms
 
@@ -43,7 +43,3 @@ npm run dev:all
 | `npm run build`        | Build frontend for production    |
 | `npm run build:server` | Build backend for production     |
 | `npm run lint`         | Run ESLint                       |
-
-## License
-
-This project is proprietary and closed-source. All rights reserved.
