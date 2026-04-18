@@ -3,7 +3,7 @@
 ## Stack
 
 - **Server**: Express, Kysely (query builder), PostgreSQL, TypeScript. Runs via `tsx`. Auth is JWT Bearer tokens in the `Authorization` header.
-- **Client**: React + Vite + TypeScript. No semicolons.
+- **Client**: React + Vite + TypeScript.
 
 ## Conventions
 
