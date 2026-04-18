@@ -1,6 +1,6 @@
-import { randomUUID } from 'crypto'
+import { closeDb, getDb } from '@/db/connection.js'
 import { hashSync } from 'bcryptjs'
-import { getDb, closeDb } from '../db/connection.js'
+import { v4 as createUuid } from 'uuid'
 
 interface SeedUser {
   username: string
@@ -337,7 +337,7 @@ async function generateSeed() {
       continue
     }
 
-    const id = randomUUID()
+    const id = createUuid()
     seedUserIds.push(id)
     await db
       .insertInto('users')
@@ -372,7 +372,7 @@ async function generateSeed() {
   for (let i = 0; i < SAMPLE_POSTS.length; i++) {
     const { title, content } = SAMPLE_POSTS[i]
     const createdAt = new Date(now - i * 30 * 60 * 1000).toISOString()
-    const id = randomUUID()
+    const id = createUuid()
     const creatorId = seedUserIds[i % seedUserIds.length]
     const creator = userMap.get(creatorId)!
 

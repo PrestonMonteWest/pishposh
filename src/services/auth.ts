@@ -1,12 +1,11 @@
 import type {
+  AuthResponse,
   AuthTokens,
   LoginCredentials,
   SignupCredentials,
-  AuthResponse,
 } from '../types/auth'
 
 const API_BASE_URL = import.meta.env.API_BASE_URL || '/api'
-
 const TOKEN_STORAGE_KEY = 'pishposh_tokens'
 
 export function getStoredTokens(): AuthTokens | null {
@@ -54,7 +53,7 @@ async function authFetch<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -62,20 +61,18 @@ async function authFetch<T>(
     },
   })
 
-  if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: 'Request failed' }))
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Request failed' }))
     throw new Error(error.message || 'Request failed')
   }
 
-  return response.json()
+  return res.json()
 }
 
 export async function login(
   credentials: LoginCredentials,
 ): Promise<AuthResponse> {
-  const response = await authFetch<AuthResponse>('/oauth/token', {
+  const res = await authFetch<AuthResponse>('/oauth/token', {
     method: 'POST',
     body: JSON.stringify({
       grant_type: 'password',
@@ -84,26 +81,26 @@ export async function login(
     }),
   })
 
-  storeTokens(response.tokens)
-  return response
+  storeTokens(res.tokens)
+  return res
 }
 
 export async function signup(
   credentials: SignupCredentials,
 ): Promise<AuthResponse> {
-  const response = await authFetch<AuthResponse>('/oauth/register', {
+  const res = await authFetch<AuthResponse>('/oauth/register', {
     method: 'POST',
     body: JSON.stringify(credentials),
   })
 
-  storeTokens(response.tokens)
-  return response
+  storeTokens(res.tokens)
+  return res
 }
 
 export async function refreshAccessToken(
   refreshToken: string,
 ): Promise<AuthTokens> {
-  const response = await authFetch<{ tokens: AuthTokens }>('/oauth/token', {
+  const res = await authFetch<{ tokens: AuthTokens }>('/oauth/token', {
     method: 'POST',
     body: JSON.stringify({
       grant_type: 'refresh_token',
@@ -111,8 +108,8 @@ export async function refreshAccessToken(
     }),
   })
 
-  storeTokens(response.tokens)
-  return response.tokens
+  storeTokens(res.tokens)
+  return res.tokens
 }
 
 export async function logout(accessToken: string): Promise<void> {

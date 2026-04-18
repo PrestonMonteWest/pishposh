@@ -1,38 +1,41 @@
-import type { Request, Response, NextFunction } from 'express'
-import { verifyAccessToken, type TokenPayload } from '../utils/tokens.js'
+import { TokenPayload, tryReadToken } from '@/utils/tokens.js'
+import type { NextFunction, Request, RequestHandler, Response } from 'express'
 
 declare global {
   namespace Express {
     interface Request {
-      user?: TokenPayload
+      token?: TokenPayload
     }
   }
 }
 
-export function authenticateToken(
+/**
+ * Required auth: 401 if token is missing or invalid.
+ */
+export const authenticateToken: RequestHandler = (
   req: Request,
   res: Response,
   next: NextFunction,
-): void {
-  const authHeader = req.headers.authorization
-  const token = authHeader?.split(' ')[1]
-
-  if (!token) {
-    res
-      .status(401)
-      .json({ message: 'Access token required', code: 'UNAUTHORIZED' })
-    return
-  }
-
-  const payload = verifyAccessToken(token)
-
+) => {
+  const payload = tryReadToken(req)
   if (!payload) {
     res
       .status(401)
-      .json({ message: 'Invalid or expired token', code: 'INVALID_TOKEN' })
+      .json({ message: 'Authentication required', code: 'UNAUTHENTICATED' })
     return
   }
+  req.token = payload
+  next()
+}
 
-  req.user = payload
+/**
+ * Optional auth: populates req.token if a valid token is present,
+ * otherwise lets the request proceed unauthenticated.
+ */
+export const optionalAuth: RequestHandler = (req, _res, next) => {
+  const payload = tryReadToken(req)
+  if (payload) {
+    req.token = payload
+  }
   next()
 }

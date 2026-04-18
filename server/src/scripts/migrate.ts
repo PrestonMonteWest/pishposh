@@ -1,7 +1,7 @@
+import { closeDb, getDb } from '@/db/connection.js'
 import { promises as fs } from 'fs'
+import { FileMigrationProvider, Migrator } from 'kysely'
 import path from 'path'
-import { Migrator, FileMigrationProvider } from 'kysely'
-import { getDb, closeDb } from '../db/connection.js'
 
 async function migrate() {
   const db = getDb()
@@ -11,10 +11,7 @@ async function migrate() {
     provider: new FileMigrationProvider({
       fs,
       path,
-      migrationFolder: path.resolve(
-        import.meta.dirname,
-        '../src/db/migrations',
-      ),
+      migrationFolder: path.resolve(import.meta.dirname, '../db/migrations'),
     }),
   })
 

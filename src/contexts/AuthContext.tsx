@@ -1,20 +1,20 @@
 import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   useCallback,
+  useContext,
+  useEffect,
   useRef,
+  useState,
   type ReactNode,
 } from 'react'
+import * as authService from '../services/auth'
 import type {
-  User,
-  AuthTokens,
   AuthState,
+  AuthTokens,
   LoginCredentials,
   SignupCredentials,
+  User,
 } from '../types/auth'
-import * as authService from '../services/auth'
 
 interface AuthContextValue extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>

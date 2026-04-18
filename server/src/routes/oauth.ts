@@ -1,22 +1,21 @@
-import { Router, type Request, type Response } from 'express'
-import { v4 as uuidv4 } from 'uuid'
-import { hashPassword, verifyPassword } from '../utils/password.js'
-import {
-  generateTokens,
-  verifyRefreshToken,
-  revokeRefreshToken,
-} from '../utils/tokens.js'
+import { authenticateToken } from '@/middleware/auth.js'
 import {
   createUser,
   findUserByEmail,
-  findUserByUsername,
   findUserById,
+  findUserByUsername,
   toPublicUser,
-} from '../models/user.js'
-import { authenticateToken } from '../middleware/auth.js'
+} from '@/models/user/user.js'
+import { hashPassword, verifyPassword } from '@/utils/password.js'
+import {
+  generateTokens,
+  revokeRefreshToken,
+  verifyRefreshToken,
+} from '@/utils/tokens.js'
+import { Router, type Request, type Response } from 'express'
+import { v4 as createUuid } from 'uuid'
 
 async function verifyCaptcha(token: string): Promise<boolean> {
-  console.log(process.env.TURNSTILE_SECRET_KEY)
   const res = await fetch(
     'https://challenges.cloudflare.com/turnstile/v0/siteverify',
     {
@@ -41,51 +40,46 @@ router.post('/register', async (req: Request, res: Response) => {
     const { email, username, displayName, password, captchaToken } = req.body
 
     if (!captchaToken || !(await verifyCaptcha(captchaToken))) {
-      res.status(400).json({
+      return res.status(400).json({
         message: 'Unable to verify your request. Please try again.',
         code: 'VERIFICATION_FAILED',
       })
-      return
     }
 
     // Validation
     if (!email || !username || !displayName || !password) {
-      res.status(400).json({
+      return res.status(400).json({
         message: 'Email, username, display name, and password are required',
         code: 'MISSING_FIELDS',
       })
-      return
     }
 
     if (password.length < 8) {
-      res.status(400).json({
+      return res.status(400).json({
         message: 'Password must be at least 8 characters',
         code: 'WEAK_PASSWORD',
       })
-      return
     }
 
     // Check for existing user
     if (await findUserByEmail(email)) {
-      res.status(409).json({
+      return res.status(409).json({
         message: 'Email already registered',
         code: 'EMAIL_EXISTS',
       })
-      return
     }
 
     if (await findUserByUsername(username)) {
-      res.status(409).json({
+      return res.status(409).json({
         message: 'Username already taken',
         code: 'USERNAME_EXISTS',
       })
-      return
     }
 
     // Create user
     const passwordHash = await hashPassword(password)
     const user = await createUser({
-      id: uuidv4(),
+      id: createUuid(),
       email: email.toLowerCase(),
       username: username.toLowerCase(),
       displayName,
@@ -96,13 +90,13 @@ router.post('/register', async (req: Request, res: Response) => {
     // Generate tokens
     const tokens = await generateTokens({ userId: user.id, email: user.email })
 
-    res.status(201).json({
+    return res.status(201).json({
       user: toPublicUser(user),
       tokens,
     })
   } catch (error) {
     console.error('Registration error:', error)
-    res.status(500).json({
+    return res.status(500).json({
       message: 'Internal server error',
       code: 'SERVER_ERROR',
     })
@@ -117,29 +111,26 @@ router.post('/token', async (req: Request, res: Response) => {
     if (grant_type === 'password') {
       // Password grant - login
       if (!email || !password) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'Email and password are required',
           code: 'MISSING_CREDENTIALS',
         })
-        return
       }
 
       const user = await findUserByEmail(email)
       if (!user) {
-        res.status(401).json({
+        return res.status(401).json({
           message: 'Invalid email or password',
           code: 'INVALID_CREDENTIALS',
         })
-        return
       }
 
       const validPassword = await verifyPassword(password, user.passwordHash)
       if (!validPassword) {
-        res.status(401).json({
+        return res.status(401).json({
           message: 'Invalid email or password',
           code: 'INVALID_CREDENTIALS',
         })
-        return
       }
 
       const tokens = await generateTokens({
@@ -147,36 +138,33 @@ router.post('/token', async (req: Request, res: Response) => {
         email: user.email,
       })
 
-      res.json({
+      return res.json({
         user: toPublicUser(user),
         tokens,
       })
     } else if (grant_type === 'refresh_token') {
       // Refresh token grant
       if (!refresh_token) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'Refresh token is required',
           code: 'MISSING_REFRESH_TOKEN',
         })
-        return
       }
 
       const storedToken = await verifyRefreshToken(refresh_token)
       if (!storedToken) {
-        res.status(401).json({
+        return res.status(401).json({
           message: 'Invalid or expired refresh token',
           code: 'INVALID_REFRESH_TOKEN',
         })
-        return
       }
 
       const user = await findUserById(storedToken.userId)
       if (!user) {
-        res.status(401).json({
+        return res.status(401).json({
           message: 'User not found',
           code: 'USER_NOT_FOUND',
         })
-        return
       }
 
       // Revoke old refresh token and generate new tokens
@@ -186,16 +174,16 @@ router.post('/token', async (req: Request, res: Response) => {
         email: user.email,
       })
 
-      res.json({ tokens })
+      return res.json({ tokens })
     } else {
-      res.status(400).json({
+      return res.status(400).json({
         message: 'Unsupported grant type',
         code: 'UNSUPPORTED_GRANT_TYPE',
       })
     }
   } catch (error) {
     console.error('Token error:', error)
-    res.status(500).json({
+    return res.status(500).json({
       message: 'Internal server error',
       code: 'SERVER_ERROR',
     })
@@ -214,10 +202,10 @@ router.post(
         await revokeRefreshToken(refresh_token)
       }
 
-      res.status(200).json({ message: 'Token revoked' })
+      return res.status(200).json({ message: 'Token revoked' })
     } catch (error) {
       console.error('Revoke error:', error)
-      res.status(500).json({
+      return res.status(500).json({
         message: 'Internal server error',
         code: 'SERVER_ERROR',
       })

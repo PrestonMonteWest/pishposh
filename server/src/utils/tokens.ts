@@ -1,18 +1,16 @@
-import jwt from 'jsonwebtoken'
-import { v4 as uuidv4 } from 'uuid'
+import { RefreshToken } from '@/models/user/types.js'
 import {
-  storeRefreshToken,
-  findRefreshToken,
   deleteRefreshToken,
-  type RefreshToken,
-} from '../models/user.js'
+  findRefreshToken,
+  storeRefreshToken,
+} from '@/models/user/user.js'
+import { Request } from 'express'
+import jwt from 'jsonwebtoken'
+import { v4 as createUuid } from 'uuid'
 
 const ACCESS_TOKEN_SECRET =
   process.env.ACCESS_TOKEN_SECRET ||
   'pishposh-access-secret-change-in-production'
-const REFRESH_TOKEN_SECRET =
-  process.env.REFRESH_TOKEN_SECRET ||
-  'pishposh-refresh-secret-change-in-production'
 
 const ACCESS_TOKEN_EXPIRY = '15m'
 const REFRESH_TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -25,7 +23,6 @@ export interface TokenPayload {
 export interface AuthTokens {
   accessToken: string
   refreshToken: string
-  expiresIn: number
   tokenType: 'Bearer'
 }
 
@@ -36,7 +33,7 @@ export function generateAccessToken(payload: TokenPayload): string {
 }
 
 export async function generateRefreshToken(userId: string): Promise<string> {
-  const token = uuidv4()
+  const token = createUuid()
   const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS)
 
   await storeRefreshToken({
@@ -54,12 +51,20 @@ export async function generateTokens(
   return {
     accessToken: generateAccessToken(payload),
     refreshToken: await generateRefreshToken(payload.userId),
-    expiresIn: 900, // 15 minutes in seconds
     tokenType: 'Bearer',
   }
 }
 
-export function verifyAccessToken(token: string): TokenPayload | null {
+/**
+ * Attempts to read and verify the token. Returns the payload on success,
+ * null on any failure (missing header, malformed, expired, invalid signature).
+ * Never throws.
+ */
+export function tryReadToken(req: Request): TokenPayload | null {
+  const header = req.headers.authorization
+  if (!header?.startsWith('Bearer ')) return null
+
+  const token = header.slice('Bearer '.length)
   try {
     return jwt.verify(token, ACCESS_TOKEN_SECRET) as TokenPayload
   } catch {

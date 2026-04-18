@@ -1,7 +1,6 @@
-import type { Kysely } from 'kysely'
-import { sql } from 'kysely'
+import { Kysely, sql } from 'kysely'
 
-export async function up(db: Kysely<unknown>): Promise<void> {
+export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE EXTENSION IF NOT EXISTS citext`.execute(db)
 
   await db.schema
@@ -87,4 +86,5 @@ export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable('posts').ifExists().execute()
   await db.schema.dropTable('refresh_tokens').ifExists().execute()
   await db.schema.dropTable('users').ifExists().execute()
+  // Note: citext extension intentionally left in place — likely reused elsewhere
 }

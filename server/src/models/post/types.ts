@@ -1,3 +1,5 @@
+import { VoteValue } from '@/db/types.js'
+
 export interface Post {
   id: string
   title: string
@@ -11,30 +13,34 @@ export interface Post {
   upvotes: number
   downvotes: number
   score: number
-  viewerVote: VoteValue | null
 }
 
-export interface CreatePostRequest {
-  title: string
-  content: string
-}
-
-export interface CreatePostResponse {
-  post: Post
-}
-
-export interface PostsPage {
+export interface PaginatedPosts {
   posts: Post[]
   nextCursor: string | null
   hasMore: boolean
 }
 
-export type VoteValue = 'down' | 'up'
-
-export interface VoteResponse {
+export interface VoteResult {
   action: 'created' | 'retracted' | 'flipped'
   userVote: VoteValue | null
   upvotes: number
   downvotes: number
   score: number
+}
+
+// Input shapes
+export interface CreatePostInput {
+  title: string
+  content: string
+}
+
+export interface CreatePostData extends CreatePostInput {
+  creatorId: string
+  creatorUsername: string
+  creatorDisplayName: string
+}
+
+export interface PostWithViewerContext extends Post {
+  viewerVote: VoteValue | null
 }

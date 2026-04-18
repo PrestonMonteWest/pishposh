@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { VoteButtons } from '../components/VoteButtons'
 import { fetchPost } from '../services/posts'
 import type { Post } from '../types/post'
 
@@ -56,8 +57,8 @@ export function PostDetail() {
         )}
 
         {post && (
-          <article>
-            <div className="flex items-center gap-2 mb-4">
+          <article className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-pink-400">
                 @{post.creatorUsername}
               </span>
@@ -66,10 +67,15 @@ export function PostDetail() {
                 {formatDate(post.createdAt)}
               </span>
             </div>
-            <h2 className="text-2xl font-bold mb-4">{post.title}</h2>
+            <h2 className="text-2xl font-bold">{post.title}</h2>
             <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
               {post.content}
             </p>
+            <VoteButtons
+              postId={post.id}
+              initialScore={post.score}
+              initialViewerVote={post.viewerVote}
+            />
           </article>
         )}
       </main>

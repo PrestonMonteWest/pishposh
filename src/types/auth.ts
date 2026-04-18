@@ -10,7 +10,6 @@ export interface User {
 export interface AuthTokens {
   accessToken: string
   refreshToken: string
-  expiresIn: number
   tokenType: 'Bearer'
 }
 

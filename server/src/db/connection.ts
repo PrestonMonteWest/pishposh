@@ -1,20 +1,20 @@
 import { Kysely, PostgresDialect } from 'kysely'
 import pg from 'pg'
-import type { Database } from './types.js'
+import type { DB } from './types.js'
 
-let db: Kysely<Database> | null = null
+let db: Kysely<DB> | null = null
 
-export function getDb(): Kysely<Database> {
+export function getDb(): Kysely<DB> {
   if (!db) {
     const connectionString =
       process.env.DATABASE_URL ||
       'postgresql://pishposh:pishposh@localhost:5432/pishposh'
 
-    db = new Kysely<Database>({
+    db = new Kysely<DB>({
       dialect: new PostgresDialect({
         pool: new pg.Pool({
           connectionString,
-          max: 10,
+          max: 20,
         }),
       }),
     })
