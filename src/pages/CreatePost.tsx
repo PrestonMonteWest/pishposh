@@ -1,33 +1,17 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { createPost } from '../services/posts'
-import type { MediaAttachment } from '../types/post'
-
-const ACCEPTED_TYPES = '.png,.gif,.jpg,.jpeg,.webp,.mp4,.mkv,.webm'
 
 export function CreatePost() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [files, setFiles] = useState<File[]>([])
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { tokens } = useAuth()
   const navigate = useNavigate()
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files)
-      setFiles((prev) => [...prev, ...newFiles])
-      e.target.value = ''
-    }
-  }
-
-  const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault()
     setError('')
 
@@ -39,14 +23,7 @@ export function CreatePost() {
     setIsSubmitting(true)
 
     try {
-      const media: MediaAttachment[] = files.map((file) => ({
-        id: '',
-        uri: '',
-        mimeType: file.type,
-        filename: file.name,
-      }))
-
-      await createPost(tokens, { title, content, media })
+      await createPost(tokens, { title, content })
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create post')
@@ -106,48 +83,6 @@ export function CreatePost() {
               className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 resize-y"
               placeholder="What's on your mind?"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">
-              Media Attachments
-            </label>
-            <label className="inline-flex items-center py-2 px-4 rounded bg-gray-800 text-pink-500 text-sm font-semibold hover:bg-gray-700 cursor-pointer transition-colors">
-              Choose Files
-              <input
-                type="file"
-                accept={ACCEPTED_TYPES}
-                multiple
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </label>
-            {files.length > 0 && (
-              <span className="ml-3 text-sm text-gray-400">
-                {files.length} file{files.length !== 1 ? 's' : ''} selected
-              </span>
-            )}
-            {files.length > 0 && (
-              <ul className="mt-3 space-y-2">
-                {files.map((file, index) => (
-                  <li
-                    key={`${file.name}-${index}`}
-                    className="flex items-center justify-between bg-gray-900 border border-gray-700 rounded px-3 py-2"
-                  >
-                    <span className="text-sm text-gray-300 truncate">
-                      {file.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(index)}
-                      className="text-red-400 hover:text-red-300 text-sm ml-3 shrink-0"
-                    >
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
           <div className="flex gap-3 pt-2">

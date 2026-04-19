@@ -1,11 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AuthProvider } from './contexts/AuthContext'
+import { CreatePost } from './pages/CreatePost'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
-import { Signup } from './pages/Signup'
-import { CreatePost } from './pages/CreatePost'
 import { PostDetail } from './pages/PostDetail'
+import { Signup } from './pages/Signup'
 
 export default function App() {
   return (

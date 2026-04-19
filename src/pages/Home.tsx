@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { VoteButtons } from '../components/VoteButtons'
 import { useAuth } from '../contexts/AuthContext'
 import { fetchPosts } from '../services/posts'
 import type { Post } from '../types/post'
@@ -136,9 +137,9 @@ export function Home() {
               <Link
                 key={post.id}
                 to={`/post/${post.id}`}
-                className="block border border-gray-800 rounded-lg p-5 hover:border-gray-700 transition-colors"
+                className="flex flex-col gap-2 border border-gray-800 rounded-lg p-5 hover:border-gray-700 transition-colors"
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-pink-400">
                     @{post.creatorUsername}
                   </span>
@@ -147,10 +148,15 @@ export function Home() {
                     {formatDate(post.createdAt)}
                   </span>
                 </div>
-                <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
+                <h2 className="text-lg font-semibold">{post.title}</h2>
                 <p className="text-gray-300 whitespace-pre-wrap">
                   {post.content}
                 </p>
+                <VoteButtons
+                  postId={post.id}
+                  initialScore={post.score}
+                  initialViewerVote={post.viewerVote}
+                />
               </Link>
             ))}
           </div>

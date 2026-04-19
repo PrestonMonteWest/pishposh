@@ -1,33 +1,9 @@
+import { getDb } from '@/db/connection.js'
+import { Users } from '@/db/types.js'
 import type { Selectable } from 'kysely'
-import { getDb } from '../db/connection.js'
-import type { UsersTable } from '../db/types.js'
+import { PublicUser, RefreshToken, User } from './types.js'
 
-export interface User {
-  id: string
-  email: string
-  username: string
-  displayName: string
-  avatarUrl?: string
-  passwordHash: string
-  createdAt: string
-}
-
-export interface PublicUser {
-  id: string
-  email: string
-  username: string
-  displayName: string
-  avatarUrl?: string
-  createdAt: string
-}
-
-export interface RefreshToken {
-  token: string
-  userId: string
-  expiresAt: Date
-}
-
-function dbRowToUser(row: Selectable<UsersTable>): User {
+function dbRowToUser(row: Selectable<Users>): User {
   return {
     id: row.id,
     email: row.email,

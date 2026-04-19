@@ -1,27 +1,25 @@
 import type { AuthTokens } from '../types/auth'
 import type {
-  Post,
   CreatePostRequest,
   CreatePostResponse,
+  Post,
   PostsPage,
+  VoteResponse,
+  VoteValue,
 } from '../types/post'
 import { getAuthHeader } from './auth'
 
 const API_BASE_URL = import.meta.env.API_BASE_URL || '/api'
 
 export async function fetchPost(id: string): Promise<Post> {
-  const response = await fetch(
-    `${API_BASE_URL}/posts/${encodeURIComponent(id)}`,
-  )
+  const res = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(id)}`)
 
-  if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: 'Request failed' }))
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Request failed' }))
     throw new Error(error.message || 'Failed to fetch post')
   }
 
-  const data = await response.json()
+  const data = await res.json()
   return data.post
 }
 
@@ -30,37 +28,53 @@ export async function fetchPosts(cursor: string | null): Promise<PostsPage> {
   if (cursor) params.set('cursor', cursor)
   params.set('limit', '20')
 
-  const response = await fetch(`${API_BASE_URL}/posts?${params}`)
+  const res = await fetch(`${API_BASE_URL}/posts?${params}`)
 
-  if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: 'Request failed' }))
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Request failed' }))
     throw new Error(error.message || 'Failed to fetch posts')
   }
 
-  return response.json()
+  return res.json()
 }
 
 export async function createPost(
   tokens: AuthTokens,
-  data: CreatePostRequest,
+  req: CreatePostRequest,
 ): Promise<CreatePostResponse> {
-  const response = await fetch(`${API_BASE_URL}/posts`, {
+  const res = await fetch(`${API_BASE_URL}/posts`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeader(tokens),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(req),
   })
 
-  if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: 'Request failed' }))
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Request failed' }))
     throw new Error(error.message || 'Failed to create post')
   }
 
-  return response.json()
+  const data = await res.json()
+  return data.post
+}
+
+export async function voteOnPost(
+  tokens: AuthTokens,
+  postId: string,
+  value: VoteValue | null,
+): Promise<VoteResponse> {
+  const res = await fetch(`/api/posts/${postId}/votes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader(tokens) },
+    body: JSON.stringify({ value }),
+  })
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Request failed' }))
+    throw new Error(error.message || 'Failed to vote on post')
+  }
+
+  return res.json()
 }

@@ -1,11 +1,11 @@
-import express from 'express'
+import { closeDb } from '@/db/connection.js'
+import oauthRoutes from '@/routes/oauth.js'
+import postsRoutes from '@/routes/posts.js'
+import usersRoutes from '@/routes/users.js'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import express from 'express'
 import path from 'path'
-import oauthRoutes from './routes/oauth.js'
-import usersRoutes from './routes/users.js'
-import postsRoutes from './routes/posts.js'
-import { closeDb } from './db/connection.js'
 
 dotenv.config({ path: path.resolve(import.meta.dirname, '../../.env') })
 
