@@ -16,7 +16,7 @@ export interface Post {
 }
 
 export interface PaginatedPosts {
-  posts: Post[]
+  posts: PostWithViewerContext[]
   nextCursor: string | null
   hasMore: boolean
 }

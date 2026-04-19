@@ -1,4 +1,4 @@
-import { authenticateToken } from '@/middleware/auth.js'
+import { requiredAuth } from '@/middleware/auth.js'
 import {
   createUser,
   findUserByEmail,
@@ -191,26 +191,22 @@ router.post('/token', async (req: Request, res: Response) => {
 })
 
 // POST /oauth/revoke - Revoke refresh token (logout)
-router.post(
-  '/revoke',
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      const { refresh_token } = req.body
+router.post('/revoke', requiredAuth, async (req: Request, res: Response) => {
+  try {
+    const { refresh_token } = req.body
 
-      if (refresh_token) {
-        await revokeRefreshToken(refresh_token)
-      }
-
-      return res.status(200).json({ message: 'Token revoked' })
-    } catch (error) {
-      console.error('Revoke error:', error)
-      return res.status(500).json({
-        message: 'Internal server error',
-        code: 'SERVER_ERROR',
-      })
+    if (refresh_token) {
+      await revokeRefreshToken(refresh_token)
     }
-  },
-)
+
+    return res.status(200).json({ message: 'Token revoked' })
+  } catch (error) {
+    console.error('Revoke error:', error)
+    return res.status(500).json({
+      message: 'Internal server error',
+      code: 'SERVER_ERROR',
+    })
+  }
+})
 
 export default router

@@ -1,4 +1,4 @@
-import { authenticateToken, optionalAuth } from '@/middleware/auth.js'
+import { optionalAuth, requiredAuth } from '@/middleware/auth.js'
 import {
   createPost,
   findPostById,
@@ -11,7 +11,7 @@ import { validate as isUuid } from 'uuid'
 
 const router = Router()
 
-router.post('/', authenticateToken, async (req: Request, res: Response) => {
+router.post('/', requiredAuth, async (req: Request, res: Response) => {
   const { title, content } = req.body
 
   if (!title || typeof title !== 'string' || !title.trim()) {
@@ -46,7 +46,7 @@ router.post('/', authenticateToken, async (req: Request, res: Response) => {
 
 router.post(
   '/:id/votes',
-  authenticateToken,
+  requiredAuth,
   async (req: Request<{ id: string }>, res: Response) => {
     const { value } = req.body as { value?: unknown }
 
@@ -78,25 +78,29 @@ router.post(
   },
 )
 
-router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
-  const id = req.params.id
-  if (!isUuid(id)) {
-    return res.status(400).json({
-      message: `Malformed post ID: ${id}`,
-      code: 'VALIDATION_ERROR',
-    })
-  }
+router.get(
+  '/:id',
+  optionalAuth,
+  async (req: Request<{ id: string }>, res: Response) => {
+    const id = req.params.id
+    if (!isUuid(id)) {
+      return res.status(400).json({
+        message: `Malformed post ID: ${id}`,
+        code: 'VALIDATION_ERROR',
+      })
+    }
 
-  const viewerId = req.token?.userId ?? null
-  const post = await findPostById(id, viewerId)
-  if (!post) {
-    return res
-      .status(404)
-      .json({ message: 'Post not found', code: 'NOT_FOUND' })
-  }
+    const viewerId = req.token?.userId ?? null
+    const post = await findPostById(id, viewerId)
+    if (!post) {
+      return res
+        .status(404)
+        .json({ message: 'Post not found', code: 'NOT_FOUND' })
+    }
 
-  return res.json({ post })
-})
+    return res.json({ post })
+  },
+)
 
 router.get('/', optionalAuth, async (req: Request, res: Response) => {
   const limit = Math.min(

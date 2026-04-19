@@ -12,7 +12,7 @@ declare global {
 /**
  * Required auth: 401 if token is missing or invalid.
  */
-export const authenticateToken: RequestHandler = (
+export const requiredAuth: RequestHandler = (
   req: Request,
   res: Response,
   next: NextFunction,

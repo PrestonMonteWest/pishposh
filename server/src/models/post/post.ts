@@ -120,7 +120,7 @@ export async function voteOnPost(
 export async function findPostById(
   id: string,
   viewerId: string | null,
-): Promise<Post | undefined> {
+): Promise<PostWithViewerContext | undefined> {
   const row = await getDb()
     .selectFrom('posts')
     .selectAll('posts')
