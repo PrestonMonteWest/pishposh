@@ -13,12 +13,18 @@ export function PostDetail() {
   useEffect(() => {
     if (!id) return
 
-    fetchPost(id)
+    const controller = new AbortController()
+
+    fetchPost(id, controller.signal)
       .then(setPost)
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : 'Failed to load post'),
-      )
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          setError(err instanceof Error ? err.message : 'Failed to load post')
+        }
+      })
       .finally(() => setIsLoading(false))
+
+    return () => controller.abort()
   }, [id])
 
   function formatDate(iso: string): string {

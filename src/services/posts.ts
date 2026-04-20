@@ -1,4 +1,3 @@
-import type { AuthTokens } from '../types/auth'
 import type {
   CreatePostRequest,
   CreatePostResponse,
@@ -7,12 +6,18 @@ import type {
   VoteResponse,
   VoteValue,
 } from '../types/post'
-import { getAuthHeader } from './auth'
+import { getAuthHeaderFromStorage } from './auth'
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
-export async function fetchPost(id: string): Promise<Post> {
-  const res = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(id)}`)
+export async function fetchPost(
+  id: string,
+  signal?: AbortSignal,
+): Promise<Post> {
+  const res = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(id)}`, {
+    signal,
+    headers: getAuthHeaderFromStorage(),
+  })
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Request failed' }))
@@ -23,12 +28,18 @@ export async function fetchPost(id: string): Promise<Post> {
   return data.post
 }
 
-export async function fetchPosts(cursor: string | null): Promise<PostsPage> {
+export async function fetchPosts(
+  cursor: string | null,
+  signal?: AbortSignal,
+): Promise<PostsPage> {
   const params = new URLSearchParams()
   if (cursor) params.set('cursor', cursor)
   params.set('limit', '20')
 
-  const res = await fetch(`${API_BASE_URL}/posts?${params}`)
+  const res = await fetch(`${API_BASE_URL}/posts?${params}`, {
+    signal,
+    headers: getAuthHeaderFromStorage(),
+  })
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Request failed' }))
@@ -39,14 +50,15 @@ export async function fetchPosts(cursor: string | null): Promise<PostsPage> {
 }
 
 export async function createPost(
-  tokens: AuthTokens,
   req: CreatePostRequest,
+  signal?: AbortSignal,
 ): Promise<CreatePostResponse> {
   const res = await fetch(`${API_BASE_URL}/posts`, {
+    signal,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeader(tokens),
+      ...getAuthHeaderFromStorage(),
     },
     body: JSON.stringify(req),
   })
@@ -61,13 +73,17 @@ export async function createPost(
 }
 
 export async function voteOnPost(
-  tokens: AuthTokens,
   postId: string,
   value: VoteValue | null,
+  signal?: AbortSignal,
 ): Promise<VoteResponse> {
-  const res = await fetch(`/api/posts/${postId}/votes`, {
+  const res = await fetch(`${API_BASE_URL}/posts/${postId}/votes`, {
+    signal,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader(tokens) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaderFromStorage(),
+    },
     body: JSON.stringify({ value }),
   })
 

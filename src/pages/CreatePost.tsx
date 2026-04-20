@@ -8,14 +8,14 @@ export function CreatePost() {
   const [content, setContent] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { tokens } = useAuth()
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault()
     setError('')
 
-    if (!tokens) {
+    if (!isAuthenticated) {
       setError('You must be logged in to create a post')
       return
     }
@@ -23,7 +23,7 @@ export function CreatePost() {
     setIsSubmitting(true)
 
     try {
-      await createPost(tokens, { title, content })
+      await createPost({ title, content })
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create post')

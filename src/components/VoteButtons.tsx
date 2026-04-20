@@ -20,10 +20,10 @@ export function VoteButtons({
   )
   const [score, setScore] = useState(initialScore)
   const [pending, setPending] = useState(false)
-  const { tokens, isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   async function handleVote(value: VoteValue) {
-    if (!tokens || pending) return
+    if (!isAuthenticated || pending) return
 
     const previousVote = viewerVote
     const previousScore = score
@@ -35,7 +35,7 @@ export function VoteButtons({
     setPending(true)
 
     try {
-      const data = await voteOnPost(tokens, postId, value)
+      const data = await voteOnPost(postId, value)
       setViewerVote(data.userVote)
       setScore(data.score)
     } catch (err) {
@@ -54,7 +54,10 @@ export function VoteButtons({
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => handleVote('up')}
+        onClick={(e) => {
+          e.stopPropagation()
+          handleVote('up')
+        }}
         disabled={disabled}
         aria-label={isAuthenticated ? 'Upvote' : 'Sign in to upvote'}
         aria-pressed={viewerVote === 'up'}
@@ -88,7 +91,10 @@ export function VoteButtons({
 
       <button
         type="button"
-        onClick={() => handleVote('down')}
+        onClick={(e) => {
+          e.stopPropagation()
+          handleVote('down')
+        }}
         disabled={disabled}
         aria-label={isAuthenticated ? 'Downvote' : 'Sign in to downvote'}
         aria-pressed={viewerVote === 'down'}
