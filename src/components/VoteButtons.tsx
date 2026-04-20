@@ -56,6 +56,7 @@ export function VoteButtons({
         type="button"
         onClick={(e) => {
           e.stopPropagation()
+          e.preventDefault()
           handleVote('up')
         }}
         disabled={disabled}
@@ -93,6 +94,7 @@ export function VoteButtons({
         type="button"
         onClick={(e) => {
           e.stopPropagation()
+          e.preventDefault()
           handleVote('down')
         }}
         disabled={disabled}
