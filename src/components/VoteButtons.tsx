@@ -35,7 +35,7 @@ export function VoteButtons({
     setPending(true)
 
     try {
-      const data = await voteOnPost(postId, value, null)
+      const data = await voteOnPost(postId, value)
       setViewerVote(data.userVote)
       setScore(data.score)
     } catch (err) {
@@ -56,7 +56,6 @@ export function VoteButtons({
         type="button"
         onClick={(e) => {
           e.stopPropagation()
-          e.preventDefault()
           handleVote('up')
         }}
         disabled={disabled}
@@ -94,7 +93,6 @@ export function VoteButtons({
         type="button"
         onClick={(e) => {
           e.stopPropagation()
-          e.preventDefault()
           handleVote('down')
         }}
         disabled={disabled}

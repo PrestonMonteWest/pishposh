@@ -23,7 +23,7 @@ export function CreatePost() {
     setIsSubmitting(true)
 
     try {
-      await createPost({ title, content }, null)
+      await createPost({ title, content })
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create post')

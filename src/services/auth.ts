@@ -5,8 +5,18 @@ import type {
   SignupCredentials,
 } from '../types/auth'
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 const TOKEN_STORAGE_KEY = 'pishposh_tokens'
+
+export class ApiError extends Error {
+  status: number
+
+  constructor(status: number, message: string) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
 
 export function getStoredTokens(): AuthTokens | null {
   const stored = localStorage.getItem(TOKEN_STORAGE_KEY)
@@ -33,6 +43,7 @@ export function isTokenExpired(tokens: AuthTokens): boolean {
   return Date.now() >= payload.exp * 1000
 }
 
+// Decodes without verifying — only safe for client-side expiry checks.
 function parseJwt(token: string): { exp?: number } | null {
   try {
     const base64Url = token.split('.')[1]
@@ -49,7 +60,7 @@ function parseJwt(token: string): { exp?: number } | null {
   }
 }
 
-async function authFetch<T = void>(
+async function jsonFetch<T = void>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
@@ -62,8 +73,8 @@ async function authFetch<T = void>(
   })
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Request failed' }))
-    throw new Error(error.message || 'Request failed')
+    const body = await res.json().catch(() => ({ message: 'Request failed' }))
+    throw new ApiError(res.status, body.message || 'Request failed')
   }
 
   return res.json()
@@ -71,8 +82,10 @@ async function authFetch<T = void>(
 
 export async function login(
   credentials: LoginCredentials,
+  signal?: AbortSignal,
 ): Promise<AuthResponse> {
-  const res = await authFetch<AuthResponse>('/oauth/token', {
+  const res = await jsonFetch<AuthResponse>('/oauth/token', {
+    signal,
     method: 'POST',
     body: JSON.stringify({
       grant_type: 'password',
@@ -87,8 +100,10 @@ export async function login(
 
 export async function signup(
   credentials: SignupCredentials,
+  signal?: AbortSignal,
 ): Promise<AuthResponse> {
-  const res = await authFetch<AuthResponse>('/oauth/register', {
+  const res = await jsonFetch<AuthResponse>('/oauth/register', {
+    signal,
     method: 'POST',
     body: JSON.stringify(credentials),
   })
@@ -99,22 +114,37 @@ export async function signup(
 
 export async function refreshAccessToken(
   refreshToken: string,
+  signal?: AbortSignal,
 ): Promise<AuthTokens> {
-  const res = await authFetch<{ tokens: AuthTokens }>('/oauth/token', {
-    method: 'POST',
-    body: JSON.stringify({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-    }),
-  })
+  try {
+    const res = await jsonFetch<{ tokens: AuthTokens }>('/oauth/token', {
+      signal,
+      method: 'POST',
+      body: JSON.stringify({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+      }),
+    })
 
-  storeTokens(res.tokens)
-  return res.tokens
+    storeTokens(res.tokens)
+    return res.tokens
+  } catch (err) {
+    // Refresh token is dead — clear local state so the app re-auths.
+    // Network errors shouldn't clear; only auth failures.
+    if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
+      clearTokens()
+    }
+    throw err
+  }
 }
 
-export async function logout(accessToken: string): Promise<void> {
+export async function logout(
+  accessToken: string,
+  signal?: AbortSignal,
+): Promise<void> {
   try {
-    await authFetch('/oauth/revoke', {
+    await jsonFetch('/oauth/revoke', {
+      signal,
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -127,18 +157,18 @@ export async function logout(accessToken: string): Promise<void> {
 
 export async function getCurrentUser(
   accessToken: string,
+  signal?: AbortSignal,
 ): Promise<AuthResponse['user']> {
-  return authFetch('/users/me', {
+  return jsonFetch('/users/me', {
+    signal,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   })
 }
 
-export function getAuthHeader(
-  tokens?: AuthTokens | null,
-): Record<string, string> {
-  if (arguments.length === 0) tokens = getStoredTokens()
+export function getAuthHeaderFromStorage(): Record<string, string> {
+  const tokens = getStoredTokens()
   if (!tokens) return {}
   return { Authorization: `${tokens.tokenType} ${tokens.accessToken}` }
 }

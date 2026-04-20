@@ -6,19 +6,17 @@ import type {
   VoteResponse,
   VoteValue,
 } from '../types/post'
-import { getAuthHeader } from './auth'
+import { getAuthHeaderFromStorage } from './auth'
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 export async function fetchPost(
   id: string,
-  signal: AbortSignal | null,
+  signal?: AbortSignal,
 ): Promise<Post> {
   const res = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(id)}`, {
     signal,
-    headers: {
-      ...getAuthHeader(),
-    },
+    headers: getAuthHeaderFromStorage(),
   })
 
   if (!res.ok) {
@@ -32,7 +30,7 @@ export async function fetchPost(
 
 export async function fetchPosts(
   cursor: string | null,
-  signal: AbortSignal | null,
+  signal?: AbortSignal,
 ): Promise<PostsPage> {
   const params = new URLSearchParams()
   if (cursor) params.set('cursor', cursor)
@@ -40,9 +38,7 @@ export async function fetchPosts(
 
   const res = await fetch(`${API_BASE_URL}/posts?${params}`, {
     signal,
-    headers: {
-      ...getAuthHeader(),
-    },
+    headers: getAuthHeaderFromStorage(),
   })
 
   if (!res.ok) {
@@ -55,14 +51,14 @@ export async function fetchPosts(
 
 export async function createPost(
   req: CreatePostRequest,
-  signal: AbortSignal | null,
+  signal?: AbortSignal,
 ): Promise<CreatePostResponse> {
   const res = await fetch(`${API_BASE_URL}/posts`, {
     signal,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeader(),
+      ...getAuthHeaderFromStorage(),
     },
     body: JSON.stringify(req),
   })
@@ -79,14 +75,14 @@ export async function createPost(
 export async function voteOnPost(
   postId: string,
   value: VoteValue | null,
-  signal: AbortSignal | null,
+  signal?: AbortSignal,
 ): Promise<VoteResponse> {
   const res = await fetch(`/api/posts/${postId}/votes`, {
     signal,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeader(),
+      ...getAuthHeaderFromStorage(),
     },
     body: JSON.stringify({ value }),
   })
