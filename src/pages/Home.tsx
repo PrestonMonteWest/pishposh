@@ -6,7 +6,7 @@ import { fetchPosts } from '../services/posts'
 import type { Post } from '../types/post'
 
 export function Home() {
-  const { user, tokens, logout } = useAuth()
+  const { user, logout } = useAuth()
   const [posts, setPosts] = useState<Post[]>([])
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
@@ -21,8 +21,10 @@ export function Home() {
     loadingRef.current = true
     setIsLoading(true)
 
+    const controller = new AbortController()
+
     try {
-      const page = await fetchPosts(nextCursor)
+      const page = await fetchPosts(nextCursor, controller.signal)
       setPosts((prev) => [...prev, ...page.posts])
       setNextCursor(page.nextCursor)
       setHasMore(page.hasMore)
@@ -32,7 +34,9 @@ export function Home() {
       setIsLoading(false)
       loadingRef.current = false
     }
-  }, [tokens, nextCursor, hasMore])
+
+    return () => controller.abort()
+  }, [user, nextCursor, hasMore])
 
   useEffect(() => {
     loadMore()

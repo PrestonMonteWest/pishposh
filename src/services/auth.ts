@@ -49,7 +49,7 @@ function parseJwt(token: string): { exp?: number } | null {
   }
 }
 
-async function authFetch<T>(
+async function authFetch<T = void>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
@@ -136,8 +136,9 @@ export async function getCurrentUser(
 }
 
 export function getAuthHeader(
-  tokens: AuthTokens | null,
+  tokens?: AuthTokens | null,
 ): Record<string, string> {
+  if (arguments.length === 0) tokens = getStoredTokens()
   if (!tokens) return {}
   return { Authorization: `${tokens.tokenType} ${tokens.accessToken}` }
 }
