@@ -77,7 +77,7 @@ export async function voteOnPost(
   value: VoteValue | null,
   signal?: AbortSignal,
 ): Promise<VoteResponse> {
-  const res = await fetch(`/api/posts/${postId}/votes`, {
+  const res = await fetch(`${API_BASE_URL}/posts/${postId}/votes`, {
     signal,
     method: 'POST',
     headers: {
