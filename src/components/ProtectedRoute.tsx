@@ -3,11 +3,15 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 interface ProtectedRouteProps {
+  emailVerificationRequired?: boolean
   children: ReactNode
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth()
+export function ProtectedRoute({
+  children,
+  emailVerificationRequired,
+}: ProtectedRouteProps) {
+  const { user, isLoading } = useAuth()
   const location = useLocation()
 
   if (isLoading) {
@@ -18,8 +22,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     )
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  if (emailVerificationRequired && !user.emailVerified) {
+    return <Navigate to="/home" replace />
   }
 
   return <>{children}</>

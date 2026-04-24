@@ -1,4 +1,4 @@
-import { optionalAuth, requiredAuth } from '@/middleware/auth.js'
+import { optionalAuth, requireAuth } from '@/middleware/auth.js'
 import {
   createPost,
   findPostById,
@@ -8,45 +8,52 @@ import {
 import { findUserById } from '@/models/user/user.js'
 import { Router, type Request, type Response } from 'express'
 import { validate as isUuid } from 'uuid'
+import { requireVerifiedEmail } from '../middleware/email.js'
 
 const router = Router()
 
-router.post('/', requiredAuth, async (req: Request, res: Response) => {
-  const { title, content } = req.body
+router.post(
+  '/',
+  requireAuth,
+  requireVerifiedEmail,
+  async (req: Request, res: Response) => {
+    const { title, content } = req.body
 
-  if (!title || typeof title !== 'string' || !title.trim()) {
-    return res
-      .status(400)
-      .json({ message: 'Title is required', code: 'VALIDATION_ERROR' })
-  }
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      return res
+        .status(400)
+        .json({ message: 'Title is required', code: 'VALIDATION_ERROR' })
+    }
 
-  if (!content || typeof content !== 'string' || !content.trim()) {
-    return res
-      .status(400)
-      .json({ message: 'Content is required', code: 'VALIDATION_ERROR' })
-  }
+    if (!content || typeof content !== 'string' || !content.trim()) {
+      return res
+        .status(400)
+        .json({ message: 'Content is required', code: 'VALIDATION_ERROR' })
+    }
 
-  const creatorId = req.token!.userId
-  const creator = await findUserById(creatorId)
-  if (!creator) {
-    return res
-      .status(401)
-      .json({ message: 'Authentication required', code: 'UNAUTHENTICATED' })
-  }
-  const post = await createPost({
-    title: title.trim(),
-    content: content.trim(),
-    creatorId,
-    creatorUsername: creator.username,
-    creatorDisplayName: creator.displayName,
-  })
+    const creatorId = req.token!.userId
+    const creator = await findUserById(creatorId)
+    if (!creator) {
+      return res
+        .status(401)
+        .json({ message: 'Authentication required', code: 'UNAUTHENTICATED' })
+    }
+    const post = await createPost({
+      title: title.trim(),
+      content: content.trim(),
+      creatorId,
+      creatorUsername: creator.username,
+      creatorDisplayName: creator.displayName,
+    })
 
-  return res.status(201).json({ post })
-})
+    return res.status(201).json({ post })
+  },
+)
 
 router.post(
   '/:id/votes',
-  requiredAuth,
+  requireAuth,
+  requireVerifiedEmail,
   async (req: Request<{ id: string }>, res: Response) => {
     const { value } = req.body as { value?: unknown }
 

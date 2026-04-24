@@ -20,7 +20,7 @@ export function VoteButtons({
   )
   const [score, setScore] = useState(initialScore)
   const [pending, setPending] = useState(false)
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   async function handleVote(value: VoteValue) {
     if (!isAuthenticated || pending) return
@@ -48,7 +48,7 @@ export function VoteButtons({
     }
   }
 
-  const disabled = !isAuthenticated || pending
+  const disabled = !isAuthenticated || !user?.emailVerified || pending
 
   return (
     <div className="flex items-center gap-2">

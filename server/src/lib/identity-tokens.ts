@@ -9,11 +9,13 @@ import jwt from 'jsonwebtoken'
 import { v4 as createUuid } from 'uuid'
 
 const ACCESS_TOKEN_SECRET =
-  process.env.ACCESS_TOKEN_SECRET ||
+  process.env.ACCESS_TOKEN_SECRET ??
   'pishposh-access-secret-change-in-production'
 
 const ACCESS_TOKEN_EXPIRY = '15m'
-const REFRESH_TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+const REFRESH_TOKEN_EXPIRY_MS = Number(
+  process.env.REFRESH_TOKEN_EXPIRY_MS ?? 7 * 24 * 60 * 60 * 1000,
+)
 
 export interface TokenPayload {
   userId: string
@@ -45,7 +47,7 @@ export async function generateRefreshToken(userId: string): Promise<string> {
   return token
 }
 
-export async function generateTokens(
+export async function generateIdentityTokens(
   payload: TokenPayload,
 ): Promise<AuthTokens> {
   return {

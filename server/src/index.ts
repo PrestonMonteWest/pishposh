@@ -1,5 +1,5 @@
 import { closeDb } from '@/db/connection.js'
-import oauthRoutes from '@/routes/oauth.js'
+import authRoutes from '@/routes/auth.js'
 import postsRoutes from '@/routes/posts.js'
 import usersRoutes from '@/routes/users.js'
 import cors from 'cors'
@@ -10,19 +10,19 @@ import path from 'path'
 dotenv.config({ path: path.resolve(import.meta.dirname, '../../.env') })
 
 const app = express()
-const PORT = process.env.PORT || 3001
+const PORT = Number(process.env.PORT ?? 3001)
 
 // Middleware
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: process.env.APP_URL ?? 'http://localhost:5173',
     credentials: true,
   }),
 )
 app.use(express.json())
 
 // Routes
-app.use('/api/oauth', oauthRoutes)
+app.use('/api/auth', authRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/posts', postsRoutes)
 

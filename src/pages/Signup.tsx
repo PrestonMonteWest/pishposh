@@ -1,7 +1,8 @@
-import { Turnstile } from '@marsidev/react-turnstile'
-import { useState, type SubmitEvent } from 'react'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { useRef, useState, type SubmitEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { ApiError } from '../services/auth'
 
 export function Signup() {
   const [email, setEmail] = useState('')
@@ -13,6 +14,7 @@ export function Signup() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const { signup, isLoading } = useAuth()
   const navigate = useNavigate()
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault()
@@ -38,7 +40,9 @@ export function Signup() {
       })
       navigate('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed')
+      setError(err instanceof ApiError ? err.message : 'Signup failed')
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
     }
   }
 
@@ -144,8 +148,11 @@ export function Signup() {
           </div>
 
           <Turnstile
+            ref={turnstileRef}
             siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
             onSuccess={(token) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => setCaptchaToken(null)}
           />
 
           <button

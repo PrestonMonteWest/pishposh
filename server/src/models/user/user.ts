@@ -1,7 +1,15 @@
 import { getDb } from '@/db/connection.js'
 import { Users } from '@/db/types.js'
+import { sendVerificationEmail } from '@/lib/email.js'
+import { generateVerificationToken } from '@/lib/verification-tokens.js'
 import type { Selectable } from 'kysely'
-import { PublicUser, RefreshToken, User } from './types.js'
+import {
+  CreateUserInput,
+  EmailVerification,
+  PublicUser,
+  RefreshToken,
+  User,
+} from './types.js'
 
 function dbRowToUser(row: Selectable<Users>): User {
   return {
@@ -12,6 +20,7 @@ function dbRowToUser(row: Selectable<Users>): User {
     avatarUrl: row.avatar_url ?? undefined,
     passwordHash: row.password_hash,
     createdAt: (row.created_at as Date).toISOString(),
+    emailVerified: row.email_verified,
   }
 }
 
@@ -46,17 +55,80 @@ export async function findUserByUsername(
   return row ? dbRowToUser(row) : undefined
 }
 
-export async function createUser(user: User): Promise<User> {
+export async function findEmailVerificationByTokenHash(
+  tokenHash: string,
+): Promise<EmailVerification | undefined> {
+  const row = await getDb()
+    .selectFrom('users')
+    .select([
+      'id',
+      'email',
+      'email_verified',
+      'email_verification_token_hash',
+      'email_verification_expires_at',
+    ])
+    .where('email_verification_token_hash', '=', tokenHash)
+    .executeTakeFirst()
+  return row
+    ? {
+        userId: row.id,
+        email: row.email,
+        emailVerified: row.email_verified,
+        emailVerificationTokenHash:
+          row.email_verification_token_hash ?? undefined,
+        emailVerificationExpiresAt:
+          row.email_verification_expires_at ?? undefined,
+      }
+    : undefined
+}
+
+export async function findEmailVerificationByUserId(
+  userId: string,
+): Promise<EmailVerification | undefined> {
+  const row = await getDb()
+    .selectFrom('users')
+    .select([
+      'id',
+      'email',
+      'email_verified',
+      'email_verification_token_hash',
+      'email_verification_expires_at',
+    ])
+    .where('id', '=', userId)
+    .executeTakeFirst()
+  return row
+    ? {
+        userId: row.id,
+        email: row.email,
+        emailVerified: row.email_verified,
+        emailVerificationTokenHash:
+          row.email_verification_token_hash ?? undefined,
+        emailVerificationExpiresAt:
+          row.email_verification_expires_at ?? undefined,
+      }
+    : undefined
+}
+
+export async function setUserEmailAsVerified(userId: string) {
+  await getDb()
+    .updateTable('users')
+    .set({
+      email_verified: true,
+      email_verification_token_hash: null,
+      email_verification_expires_at: null,
+    })
+    .where('id', '=', userId)
+}
+
+export async function createUser(user: CreateUserInput): Promise<User> {
   const row = await getDb()
     .insertInto('users')
     .values({
-      id: user.id,
       email: user.email,
       username: user.username,
       display_name: user.displayName,
       avatar_url: user.avatarUrl ?? null,
       password_hash: user.passwordHash,
-      created_at: user.createdAt,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -107,4 +179,25 @@ export async function deleteUserRefreshTokens(userId: string): Promise<void> {
     .deleteFrom('refresh_tokens')
     .where('user_id', '=', userId)
     .execute()
+}
+
+/**
+ * Generates a verification token and sends an email to the user.
+ *
+ * @param userId
+ * @param email
+ */
+export async function issueVerificationEmail(userId: string, email: string) {
+  const { rawToken, tokenHash, expiresAt } = generateVerificationToken()
+
+  await getDb()
+    .updateTable('users')
+    .set({
+      email_verification_token_hash: tokenHash,
+      email_verification_expires_at: expiresAt,
+    })
+    .where('id', '=', userId)
+    .execute()
+
+  await sendVerificationEmail(email, rawToken)
 }
