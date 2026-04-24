@@ -1,7 +1,7 @@
 {
   "name": "pishposh",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,8 +11,8 @@
     "build:server": "tsc -p server/tsconfig.json && tsc-alias -p server/tsconfig.json",
     "build:all": "concurrently \"npm run build\" \"npm run build:server\"",
     "lint": "eslint .",
-    "db:migrate": "tsx server/src/scripts/migrate.ts",
-    "db:seed": "tsx server/src/scripts/seed-posts.ts",
+    "db:migrate": "tsx --tsconfig server/tsconfig.json server/src/scripts/migrate.ts",
+    "db:seed": "tsx --tsconfig server/tsconfig.json server/src/scripts/seed-posts.ts",
     "db:codegen": "kysely-codegen --dialect postgres --out-file server/src/db/types.ts",
     "db:setup": "npm run db:migrate && npm run db:seed && npm run db:codegen"
   },
@@ -29,6 +29,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
+    "resend": "^6.12.2",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

@@ -6,6 +6,7 @@ import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 import { PostDetail } from './pages/PostDetail'
 import { Signup } from './pages/Signup'
+import { VerifyEmail } from './pages/VerifyEmail'
 
 export default function App() {
   return (
@@ -14,11 +15,12 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/post/:id" element={<PostDetail />} />
           <Route
             path="/create"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute emailVerificationRequired={true}>
                 <CreatePost />
               </ProtectedRoute>
             }

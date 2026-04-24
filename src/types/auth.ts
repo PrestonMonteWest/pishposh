@@ -5,6 +5,7 @@ export interface User {
   displayName: string
   avatarUrl?: string
   createdAt: string
+  emailVerified: boolean
 }
 
 export interface AuthTokens {

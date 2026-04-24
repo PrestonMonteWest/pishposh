@@ -5,32 +5,45 @@ export async function up(db: Kysely<any>): Promise<void> {
   // Safe to run if already enabled
   await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`.execute(db)
 
-  await sql`
-    ALTER TABLE posts
-    ALTER COLUMN id SET DEFAULT gen_random_uuid()
-  `.execute(db)
+  await db.schema
+    .alterTable('posts')
+    .alterColumn('id', (col) => col.setDefault(sql`gen_random_uuid()`))
+    .execute()
 
-  await sql`
-    ALTER TABLE users
-    ALTER COLUMN id SET DEFAULT gen_random_uuid()
-  `.execute(db)
+  await db.schema
+    .alterTable('users')
+    .alterColumn('id', (col) => col.setDefault(sql`gen_random_uuid()`))
+    .execute()
 
-  await sql`
-    ALTER TABLE refresh_tokens
-    ALTER COLUMN token SET DEFAULT gen_random_uuid()
-  `.execute(db)
+  await db.schema
+    .alterTable('refresh_tokens')
+    .alterColumn('id', (col) => col.setDefault(sql`gen_random_uuid()`))
+    .execute()
 
-  await sql`
-    ALTER TABLE media_attachments
-    ALTER COLUMN id SET DEFAULT gen_random_uuid()
-  `.execute(db)
+  await db.schema
+    .alterTable('media_attachments')
+    .alterColumn('id', (col) => col.setDefault(sql`gen_random_uuid()`))
+    .execute()
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await sql`ALTER TABLE posts ALTER COLUMN id DROP DEFAULT`.execute(db)
-  await sql`ALTER TABLE users ALTER COLUMN id DROP DEFAULT`.execute(db)
-  await sql`ALTER TABLE refresh_tokens ALTER COLUMN id DROP DEFAULT`.execute(db)
-  await sql`ALTER TABLE media_attachments ALTER COLUMN id DROP DEFAULT`.execute(
-    db,
-  )
+  await db.schema
+    .alterTable('posts')
+    .alterColumn('id', (col) => col.dropDefault())
+    .execute()
+
+  await db.schema
+    .alterTable('users')
+    .alterColumn('id', (col) => col.dropDefault())
+    .execute()
+
+  await db.schema
+    .alterTable('refresh_tokens')
+    .alterColumn('id', (col) => col.dropDefault())
+    .execute()
+
+  await db.schema
+    .alterTable('media_attachments')
+    .alterColumn('id', (col) => col.dropDefault())
+    .execute()
 }

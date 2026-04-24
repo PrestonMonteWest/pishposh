@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { VerificationBanner } from '../components/VerificationBanner'
 import { VoteButtons } from '../components/VoteButtons'
+import { useAuth } from '../contexts/AuthContext'
 import { fetchPost } from '../services/posts'
 import type { Post } from '../types/post'
 
@@ -9,6 +11,7 @@ export function PostDetail() {
   const [post, setPost] = useState<Post | null>(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const { user } = useAuth()
 
   useEffect(() => {
     if (!id) return
@@ -51,7 +54,9 @@ export function PostDetail() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto p-4">
+      {user && !user.emailVerified && <VerificationBanner />}
+
+      <main className="max-w-2xl mx-auto mt-4 pb-4">
         {isLoading && (
           <div className="py-8 text-center text-gray-500">Loading...</div>
         )}

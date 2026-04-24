@@ -1,11 +1,11 @@
-import { requiredAuth } from '@/middleware/auth.js'
+import { requireAuth } from '@/middleware/auth.js'
 import { findUserById, toPublicUser } from '@/models/user/user.js'
 import { Router, type Request, type Response } from 'express'
 
 const router = Router()
 
 // GET /users/me - Get current user profile
-router.get('/me', requiredAuth, async (req: Request, res: Response) => {
+router.get('/me', requireAuth, async (req: Request, res: Response) => {
   const user = await findUserById(req.token!.userId)
 
   if (!user) {

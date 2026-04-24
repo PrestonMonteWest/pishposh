@@ -59,22 +59,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       try {
-        if (authService.isTokenExpired(storedTokens)) {
-          const newTokens = await authService.refreshAccessToken(
-            storedTokens.refreshToken,
-          )
-          setTokens(newTokens)
-          const currentUser = await authService.getCurrentUser(
-            newTokens.accessToken,
-          )
-          setUser(currentUser)
+        if (authService.isAccessTokenExpired()) {
+          setTokens(await authService.refreshAccessToken())
         } else {
           setTokens(storedTokens)
-          const currentUser = await authService.getCurrentUser(
-            storedTokens.accessToken,
-          )
-          setUser(currentUser)
         }
+        const currentUser = await authService.getCurrentUser()
+        setUser(currentUser)
       } catch (error) {
         authService.clearTokens()
         setUser(null)
@@ -110,21 +101,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const logout = useCallback(async () => {
-    if (tokens?.accessToken) {
-      await authService.logout(tokens.accessToken)
-    }
+    await authService.logout()
     setUser(null)
     setTokens(null)
-  }, [tokens])
+  }, [])
 
   const refreshToken = useCallback(async () => {
     if (!tokens?.refreshToken) return
 
     try {
-      const newTokens = await authService.refreshAccessToken(
-        tokens.refreshToken,
-      )
-      setTokens(newTokens)
+      setTokens(await authService.refreshAccessToken())
     } catch {
       setUser(null)
       setTokens(null)

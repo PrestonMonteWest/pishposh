@@ -56,6 +56,9 @@ export interface Users {
   created_at: Generated<Timestamp>;
   display_name: string;
   email: string;
+  email_verification_expires_at: Timestamp | null;
+  email_verification_token_hash: string | null;
+  email_verified: Generated<boolean>;
   id: Generated<string>;
   password_hash: string;
   username: string;

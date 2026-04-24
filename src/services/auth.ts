@@ -5,16 +5,18 @@ import type {
   SignupCredentials,
 } from '../types/auth'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 const TOKEN_STORAGE_KEY = 'pishposh_tokens'
 
 export class ApiError extends Error {
   status: number
+  code: string
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, code: string) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.code = code
   }
 }
 
@@ -37,10 +39,18 @@ export function clearTokens(): void {
   localStorage.removeItem(TOKEN_STORAGE_KEY)
 }
 
-export function isTokenExpired(tokens: AuthTokens): boolean {
-  const payload = parseJwt(tokens.accessToken)
+export function isAccessTokenExpired(): boolean {
+  const token = getStoredTokens()?.accessToken
+  if (!token) return true
+  const payload = parseJwt(token)
   if (!payload?.exp) return true
   return Date.now() >= payload.exp * 1000
+}
+
+export function getAuthHeaderFromStorage(): Record<string, string> {
+  const tokens = getStoredTokens()
+  if (!tokens) return {}
+  return { Authorization: `${tokens.tokenType} ${tokens.accessToken}` }
 }
 
 // Decodes without verifying — only safe for client-side expiry checks.
@@ -74,7 +84,11 @@ async function jsonFetch<T = void>(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: 'Request failed' }))
-    throw new ApiError(res.status, body.message || 'Request failed')
+    throw new ApiError(
+      res.status,
+      body.message ?? 'Request failed',
+      body.code ?? 'REQUEST_FAILED',
+    )
   }
 
   return res.json()
@@ -84,7 +98,7 @@ export async function login(
   credentials: LoginCredentials,
   signal?: AbortSignal,
 ): Promise<AuthResponse> {
-  const res = await jsonFetch<AuthResponse>('/oauth/token', {
+  const res = await jsonFetch<AuthResponse>('/auth/token', {
     signal,
     method: 'POST',
     body: JSON.stringify({
@@ -102,7 +116,7 @@ export async function signup(
   credentials: SignupCredentials,
   signal?: AbortSignal,
 ): Promise<AuthResponse> {
-  const res = await jsonFetch<AuthResponse>('/oauth/register', {
+  const res = await jsonFetch<AuthResponse>('/auth/register', {
     signal,
     method: 'POST',
     body: JSON.stringify(credentials),
@@ -113,16 +127,19 @@ export async function signup(
 }
 
 export async function refreshAccessToken(
-  refreshToken: string,
   signal?: AbortSignal,
 ): Promise<AuthTokens> {
   try {
-    const res = await jsonFetch<{ tokens: AuthTokens }>('/oauth/token', {
+    const token = getStoredTokens()?.refreshToken
+    if (!token) {
+      throw new Error('Refresh token not found')
+    }
+    const res = await jsonFetch<{ tokens: AuthTokens }>('/auth/token', {
       signal,
       method: 'POST',
       body: JSON.stringify({
         grant_type: 'refresh_token',
-        refresh_token: refreshToken,
+        refresh_token: token,
       }),
     })
 
@@ -138,17 +155,14 @@ export async function refreshAccessToken(
   }
 }
 
-export async function logout(
-  accessToken: string,
-  signal?: AbortSignal,
-): Promise<void> {
+export async function logout(signal?: AbortSignal): Promise<void> {
+  if (!getStoredTokens()) return
+
   try {
-    await jsonFetch('/oauth/revoke', {
+    await jsonFetch('/auth/revoke', {
       signal,
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: getAuthHeaderFromStorage(),
     })
   } finally {
     clearTokens()
@@ -156,19 +170,26 @@ export async function logout(
 }
 
 export async function getCurrentUser(
-  accessToken: string,
   signal?: AbortSignal,
 ): Promise<AuthResponse['user']> {
   return jsonFetch('/users/me', {
     signal,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers: getAuthHeaderFromStorage(),
   })
 }
 
-export function getAuthHeaderFromStorage(): Record<string, string> {
-  const tokens = getStoredTokens()
-  if (!tokens) return {}
-  return { Authorization: `${tokens.tokenType} ${tokens.accessToken}` }
+export async function verifyEmail(emailToken: string, signal?: AbortSignal) {
+  await jsonFetch<{ message: string; code: string }>('/auth/verify-email', {
+    signal,
+    method: 'POST',
+    body: JSON.stringify({ token: emailToken }),
+  })
+}
+
+export async function resendEmailVerification(signal?: AbortSignal) {
+  await jsonFetch('/auth/resend-email-verification', {
+    signal,
+    method: 'POST',
+    headers: getAuthHeaderFromStorage(),
+  })
 }
