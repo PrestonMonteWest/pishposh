@@ -21,11 +21,12 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await db.schema.dropIndex('idx_users_email_verification_token_hash')
+  await db.schema.dropIndex('idx_users_email_verification_token_hash').execute()
 
   await db.schema
     .alterTable('users')
     .dropColumn('email_verified')
     .dropColumn('email_verification_token_hash')
     .dropColumn('email_verification_expires_at')
+    .execute()
 }

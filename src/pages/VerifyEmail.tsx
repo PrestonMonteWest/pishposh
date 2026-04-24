@@ -17,7 +17,7 @@ export function VerifyEmail() {
 
     const controller = new AbortController()
 
-    verifyEmail(token)
+    verifyEmail(token, controller.signal)
       .then(() => setStatus('ok'))
       .catch((err) => {
         if (err instanceof ApiError) {

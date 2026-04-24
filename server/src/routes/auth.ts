@@ -76,7 +76,13 @@ router.post('/register', async (req: Request, res: Response) => {
     passwordHash,
   })
 
-  await issueVerificationEmail(user.id, user.email)
+  let emailSendFailed: boolean | undefined
+  try {
+    await issueVerificationEmail(user.id, user.email)
+  } catch (err) {
+    console.error('Email send failed:', err)
+    emailSendFailed = true
+  }
 
   const tokens = await generateIdentityTokens({
     userId: user.id,
@@ -85,6 +91,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
   return res.status(201).json({
     user: toPublicUser(user),
+    emailSendFailed,
     tokens,
   })
 })

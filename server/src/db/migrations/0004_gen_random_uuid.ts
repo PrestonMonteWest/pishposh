@@ -30,16 +30,20 @@ export async function down(db: Kysely<any>): Promise<void> {
   await db.schema
     .alterTable('posts')
     .alterColumn('id', (col) => col.dropDefault())
+    .execute()
 
   await db.schema
     .alterTable('users')
     .alterColumn('id', (col) => col.dropDefault())
+    .execute()
 
   await db.schema
     .alterTable('refresh_tokens')
     .alterColumn('id', (col) => col.dropDefault())
+    .execute()
 
   await db.schema
     .alterTable('media_attachments')
     .alterColumn('id', (col) => col.dropDefault())
+    .execute()
 }

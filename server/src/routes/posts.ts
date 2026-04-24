@@ -5,7 +5,6 @@ import {
   findPostsPaginated,
   voteOnPost,
 } from '@/models/post/post.js'
-import { findUserById } from '@/models/user/user.js'
 import { Router, type Request, type Response } from 'express'
 import { validate as isUuid } from 'uuid'
 import { requireVerifiedEmail } from '../middleware/email.js'
@@ -32,18 +31,12 @@ router.post(
     }
 
     const creatorId = req.token!.userId
-    const creator = await findUserById(creatorId)
-    if (!creator) {
-      return res
-        .status(401)
-        .json({ message: 'Authentication required', code: 'UNAUTHENTICATED' })
-    }
     const post = await createPost({
       title: title.trim(),
       content: content.trim(),
       creatorId,
-      creatorUsername: creator.username,
-      creatorDisplayName: creator.displayName,
+      creatorUsername: req.user!.username,
+      creatorDisplayName: req.user!.displayName,
     })
 
     return res.status(201).json({ post })

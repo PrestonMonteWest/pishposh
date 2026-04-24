@@ -118,6 +118,7 @@ export async function setUserEmailAsVerified(userId: string) {
       email_verification_expires_at: null,
     })
     .where('id', '=', userId)
+    .execute()
 }
 
 export async function createUser(user: CreateUserInput): Promise<User> {
