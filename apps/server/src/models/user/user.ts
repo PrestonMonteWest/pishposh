@@ -137,7 +137,7 @@ export async function createUser(user: CreateUserInput): Promise<User> {
 }
 
 export function toPublicUser(user: User): PublicUser {
-  const { passwordHash, ...publicUser } = user
+  const { passwordHash: _ph, ...publicUser } = user
   return publicUser
 }
 

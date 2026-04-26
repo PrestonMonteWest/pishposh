@@ -1,6 +1,6 @@
 import { Kysely, sql } from 'kysely'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<unknown>): Promise<void> {
   // pgcrypto ships with Postgres and provides gen_random_uuid()
   // Safe to run if already enabled
   await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`.execute(db)
@@ -26,7 +26,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute()
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .alterTable('posts')
     .alterColumn('id', (col) => col.dropDefault())

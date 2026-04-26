@@ -1,6 +1,6 @@
 import { Kysely, sql } from 'kysely'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema.createType('vote_value').asEnum(['up', 'down']).execute()
 
   await db.schema
@@ -46,7 +46,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   `.execute(db)
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<unknown>): Promise<void> {
   await sql`DROP TRIGGER IF EXISTS post_votes_set_updated_at ON post_votes;`.execute(
     db,
   )

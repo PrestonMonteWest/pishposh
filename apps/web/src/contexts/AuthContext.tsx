@@ -66,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
         const currentUser = await authService.getCurrentUser()
         setUser(currentUser)
-      } catch (error) {
+      } catch {
         authService.clearTokens()
         setUser(null)
         setTokens(null)

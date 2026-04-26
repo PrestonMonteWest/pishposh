@@ -1,0 +1,43 @@
+{
+  "name": "@pishposh/server",
+  "private": true,
+  "version": "0.5.2",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:seed": "tsx src/scripts/seed-posts.ts",
+    "db:codegen": "kysely-codegen --dialect postgres --out-file src/db/types.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed && npm run db:codegen"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "kysely": "^0.28.11",
+    "pg": "^8.18.0",
+    "resend": "^6.12.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/pg": "^8.16.0",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^9.39.4",
+    "globals": "^16.5.0",
+    "kysely-codegen": "^0.20.0",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.20.3",
+    "typescript-eslint": "^8.59.0"
+  }
+}
