@@ -3,14 +3,20 @@ import authRoutes from '@/routes/auth.js'
 import postsRoutes from '@/routes/posts.js'
 import usersRoutes from '@/routes/users.js'
 import cors from 'cors'
-import dotenv from 'dotenv'
 import express from 'express'
-import path from 'path'
 
-dotenv.config({ path: path.resolve(import.meta.dirname, '../../.env') })
+const NODE_ENV = process.env.NODE_ENV ?? 'development'
+if (NODE_ENV === 'development') {
+  const dotenv = await import('dotenv')
+  dotenv.config()
+}
 
 const app = express()
 const PORT = Number(process.env.PORT ?? 3001)
+if (Number.isNaN(PORT)) {
+  throw new Error('PORT is NaN')
+}
+const API_BASE_URL = process.env.API_BASE_URL ?? '/api'
 
 // Middleware
 app.use(
@@ -22,12 +28,12 @@ app.use(
 app.use(express.json())
 
 // Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/users', usersRoutes)
-app.use('/api/posts', postsRoutes)
+app.use(`${API_BASE_URL}/auth`, authRoutes)
+app.use(`${API_BASE_URL}/users`, usersRoutes)
+app.use(`${API_BASE_URL}/posts`, postsRoutes)
 
 // Health check
-app.get('/api/health', (_req, res) => {
+app.get(`${API_BASE_URL}/health`, (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
@@ -49,7 +55,9 @@ app.use(
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
-  console.log(`API endpoints available at http://localhost:${PORT}/api`)
+  console.log(
+    `API endpoints available at http://localhost:${PORT}${API_BASE_URL}`,
+  )
 })
 
 async function shutdown() {

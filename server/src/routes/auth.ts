@@ -32,7 +32,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
   if (!captchaToken || !(await verifyCaptchaToken(captchaToken))) {
     return res.status(400).json({
-      message: 'Unable to verify your request. Please try again.',
+      message: 'Unable to verify your request. Please try again',
       code: 'VERIFICATION_FAILED',
     })
   }

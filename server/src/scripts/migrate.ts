@@ -1,7 +1,10 @@
 import { closeDb, getDb } from '@/db/connection.js'
+import dotenv from 'dotenv'
 import { promises as fs } from 'fs'
 import { FileMigrationProvider, Migrator } from 'kysely'
 import path from 'path'
+
+dotenv.config()
 
 async function migrate() {
   const db = getDb()

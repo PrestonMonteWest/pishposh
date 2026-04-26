@@ -13,7 +13,12 @@ const ACCESS_TOKEN_SECRET =
   'pishposh-access-secret-change-in-production'
 
 const ACCESS_TOKEN_EXPIRY = '15m'
-const REFRESH_TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+const REFRESH_TOKEN_EXPIRY_MS = Number(
+  process.env.REFRESH_TOKEN_EXPIRY_MS ?? 7 * 24 * 60 * 60 * 1000,
+)
+if (Number.isNaN(REFRESH_TOKEN_EXPIRY_MS)) {
+  throw new Error('REFRESH_TOKEN_EXPIRY_MS is NaN')
+}
 
 export interface TokenPayload {
   userId: string
