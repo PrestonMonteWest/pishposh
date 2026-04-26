@@ -1,9 +1,7 @@
 import crypto from 'node:crypto'
 
 export const EMAIL_VERIFICATION_TOKEN_BYTES = 32
-export const EMAIL_VERIFICATION_TOKEN_EXPIRY_MS = Number(
-  process.env.EMAIL_VERIFICATION_TOKEN_EXPIRY_MS ?? 48 * 60 * 60 * 1000,
-)
+export const EMAIL_VERIFICATION_TOKEN_EXPIRY_MS = 2 * 24 * 60 * 60 * 1000 // 2 days
 
 export function generateVerificationToken() {
   const rawToken = crypto
