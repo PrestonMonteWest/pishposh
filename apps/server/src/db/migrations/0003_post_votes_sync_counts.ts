@@ -1,6 +1,6 @@
 import { Kysely, sql } from 'kysely'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<unknown>): Promise<void> {
   // Add the denormalized columns
   await db.schema
     .alterTable('posts')
@@ -82,7 +82,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   `.execute(db)
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<unknown>): Promise<void> {
   await sql`DROP TRIGGER IF EXISTS post_votes_sync_counts ON post_votes;`.execute(
     db,
   )

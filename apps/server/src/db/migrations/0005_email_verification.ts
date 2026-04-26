@@ -1,6 +1,7 @@
 import { Kysely, sql } from 'kysely'
+import { Users } from '../types.js'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<{ users: Users }>): Promise<void> {
   await db.schema
     .alterTable('users')
     .addColumn('email_verified', 'boolean', (col) =>
@@ -20,7 +21,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.updateTable('users').set('email_verified', true).execute()
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropIndex('idx_users_email_verification_token_hash').execute()
 
   await db.schema

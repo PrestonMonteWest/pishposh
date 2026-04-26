@@ -4,6 +4,8 @@ import { User } from '../models/user/types.js'
 import { findUserById } from '../models/user/user.js'
 
 declare global {
+  // This is required to hook into Express's type system for requests
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       token?: TokenPayload
