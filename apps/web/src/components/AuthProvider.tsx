@@ -1,37 +1,12 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { AuthContext, type AuthContextValue } from '../contexts/AuthContext'
 import * as authService from '../services/auth'
 import type {
-  AuthState,
   AuthTokens,
   LoginCredentials,
   SignupCredentials,
   User,
 } from '../types/auth'
-
-interface AuthContextValue extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>
-  signup: (credentials: SignupCredentials) => Promise<void>
-  logout: () => Promise<void>
-  refreshToken: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null)
-
-export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
 
 interface AuthProviderProps {
   children: ReactNode

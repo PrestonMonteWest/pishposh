@@ -11,6 +11,7 @@ export function VerifyEmail() {
   useEffect(() => {
     const token = params.get('token')
     if (!token) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setStatus('invalid')
       return
     }

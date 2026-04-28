@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { VerificationBanner } from '../components/VerificationBanner'
 import { VoteButtons } from '../components/VoteButtons'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 import { fetchPost } from '../services/posts'
 import type { Post } from '../types/post'
 
