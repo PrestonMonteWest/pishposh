@@ -16,24 +16,39 @@ router.post(
   requireAuth,
   requireVerifiedEmail,
   async (req: Request, res: Response) => {
-    const { title, content } = req.body
+    const title = req.body.title?.trim()
+    const content = req.body.content?.trim()
 
-    if (!title || typeof title !== 'string' || !title.trim()) {
+    if (!title || typeof title !== 'string' || !title) {
       return res
         .status(400)
-        .json({ message: 'Title is required', code: 'VALIDATION_ERROR' })
+        .json({ message: 'Title is required', code: 'MISSING_FIELDS' })
     }
 
-    if (!content || typeof content !== 'string' || !content.trim()) {
+    if (title.length > 100) {
+      return res.status(400).json({
+        message: 'Title must be 100 characters or less',
+        code: 'VERIFICATION_FAILED',
+      })
+    }
+
+    if (!content || typeof content !== 'string' || !content) {
       return res
         .status(400)
-        .json({ message: 'Content is required', code: 'VALIDATION_ERROR' })
+        .json({ message: 'Content is required', code: 'MISSING_FIELDS' })
+    }
+
+    if (content.length > 2000) {
+      return res.status(400).json({
+        message: 'Content must be 2000 characters or less',
+        code: 'VERIFICATION_FAILED',
+      })
     }
 
     const creatorId = req.token!.userId
     const post = await createPost({
-      title: title.trim(),
-      content: content.trim(),
+      title,
+      content,
       creatorId,
       creatorUsername: req.user!.username,
       creatorDisplayName: req.user!.displayName,
@@ -53,15 +68,15 @@ router.post(
     if (value !== 'up' && value !== 'down') {
       return res.status(400).json({
         message: 'value must be "up" or "down"',
-        code: 'VALIDATION_ERROR',
+        code: 'VERIFICATION_FAILED',
       })
     }
 
     const postId = req.params.id
     if (!isUuid(postId)) {
-      return res.status(400).json({
-        message: `Malformed post ID: ${postId}`,
-        code: 'VALIDATION_ERROR',
+      return res.status(404).json({
+        message: 'Post not found',
+        code: 'NOT_FOUND',
       })
     }
 
@@ -84,9 +99,9 @@ router.get(
   async (req: Request<{ id: string }>, res: Response) => {
     const id = req.params.id
     if (!isUuid(id)) {
-      return res.status(400).json({
-        message: `Malformed post ID: ${id}`,
-        code: 'VALIDATION_ERROR',
+      return res.status(404).json({
+        message: 'Post not found',
+        code: 'NOT_FOUND',
       })
     }
 

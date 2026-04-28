@@ -60,6 +60,7 @@ export function CreatePost() {
               id="title"
               type="text"
               value={title}
+              maxLength={100}
               onChange={(e) => setTitle(e.target.value)}
               required
               className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-pink-500"
@@ -77,6 +78,7 @@ export function CreatePost() {
             <textarea
               id="content"
               value={content}
+              maxLength={2000}
               onChange={(e) => setContent(e.target.value)}
               required
               rows={6}
