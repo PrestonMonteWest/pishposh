@@ -16,24 +16,42 @@ router.post(
   requireAuth,
   requireVerifiedEmail,
   async (req: Request, res: Response) => {
-    const { title, content } = req.body
+    const { title: rawTitle, content: rawContent } = req.body
 
-    if (!title || typeof title !== 'string' || !title.trim()) {
+    if (!rawTitle || typeof rawTitle !== 'string' || !rawTitle.trim()) {
       return res
         .status(400)
-        .json({ message: 'Title is required', code: 'VALIDATION_ERROR' })
+        .json({ message: 'Title is required', code: 'MISSING_FIELDS' })
     }
 
-    if (!content || typeof content !== 'string' || !content.trim()) {
+    const title = rawTitle.trim()
+
+    if (title.length > 100) {
+      return res.status(400).json({
+        message: 'Title must be 100 characters or less',
+        code: 'VALIDATION_ERROR',
+      })
+    }
+
+    if (!rawContent || typeof rawContent !== 'string' || !rawContent.trim()) {
       return res
         .status(400)
-        .json({ message: 'Content is required', code: 'VALIDATION_ERROR' })
+        .json({ message: 'Content is required', code: 'MISSING_FIELDS' })
+    }
+
+    const content = rawContent.trim()
+
+    if (content.length > 2000) {
+      return res.status(400).json({
+        message: 'Content must be 2000 characters or less',
+        code: 'VALIDATION_ERROR',
+      })
     }
 
     const creatorId = req.token!.userId
     const post = await createPost({
-      title: title.trim(),
-      content: content.trim(),
+      title,
+      content,
       creatorId,
       creatorUsername: req.user!.username,
       creatorDisplayName: req.user!.displayName,
@@ -59,9 +77,9 @@ router.post(
 
     const postId = req.params.id
     if (!isUuid(postId)) {
-      return res.status(400).json({
-        message: `Malformed post ID: ${postId}`,
-        code: 'VALIDATION_ERROR',
+      return res.status(404).json({
+        message: 'Post not found',
+        code: 'NOT_FOUND',
       })
     }
 
@@ -84,9 +102,9 @@ router.get(
   async (req: Request<{ id: string }>, res: Response) => {
     const id = req.params.id
     if (!isUuid(id)) {
-      return res.status(400).json({
-        message: `Malformed post ID: ${id}`,
-        code: 'VALIDATION_ERROR',
+      return res.status(404).json({
+        message: 'Post not found',
+        code: 'NOT_FOUND',
       })
     }
 

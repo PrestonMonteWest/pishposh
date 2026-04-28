@@ -26,7 +26,7 @@ import { verifyCaptchaToken } from '../lib/captcha-tokens.js'
 
 const router = Router()
 
-// POST /oauth/register - Create new user account
+// Create new user account
 router.post('/register', async (req: Request, res: Response) => {
   const { email, username, displayName, password, captchaToken } = req.body
 
@@ -45,9 +45,9 @@ router.post('/register', async (req: Request, res: Response) => {
     })
   }
 
-  if (password.length < 8) {
+  if (password.length < 12) {
     return res.status(400).json({
-      message: 'Password must be at least 8 characters',
+      message: 'Password must be at least 12 characters',
       code: 'WEAK_PASSWORD',
     })
   }
@@ -96,7 +96,7 @@ router.post('/register', async (req: Request, res: Response) => {
   })
 })
 
-// POST /oauth/token - Login or refresh token
+// Login or refresh token
 router.post('/token', async (req: Request, res: Response) => {
   const { grant_type, email, password, refresh_token } = req.body
 
@@ -155,7 +155,7 @@ router.post('/token', async (req: Request, res: Response) => {
     if (!user) {
       return res.status(401).json({
         message: 'User not found',
-        code: 'USER_NOT_FOUND',
+        code: 'NOT_FOUND',
       })
     }
 
@@ -175,7 +175,7 @@ router.post('/token', async (req: Request, res: Response) => {
   }
 })
 
-// POST /oauth/revoke - Revoke refresh token (logout)
+// Revoke refresh token (logout)
 router.post('/revoke', requireAuth, async (req: Request, res: Response) => {
   const { refresh_token } = req.body
 
@@ -205,7 +205,7 @@ router.post('/verify-email', async (req, res) => {
     })
   }
   if (existing.emailVerified) {
-    // Idempotent — treat as success so a double-click doesn't confuse users.
+    // Idempotent: treat as success so a double-click doesn't confuse users
     return res.json({ message: 'Email verified', alreadyVerified: true })
   }
   if (isExpired(existing.emailVerificationExpiresAt)) {
@@ -222,7 +222,9 @@ router.post('/verify-email', async (req, res) => {
 
 router.post('/resend-email-verification', requireAuth, async (req, res) => {
   if (req.user!.emailVerified) {
-    return res.status(400).json({ code: 'ALREADY_VERIFIED' })
+    return res
+      .status(400)
+      .json({ message: 'Email is already verified', code: 'ALREADY_VERIFIED' })
   }
 
   const existing = await findEmailVerificationByUserId(req.user!.id)
@@ -230,10 +232,10 @@ router.post('/resend-email-verification', requireAuth, async (req, res) => {
   if (!existing) {
     return res
       .status(404)
-      .json({ message: 'User not found', code: 'USER_NOT_FOUND' })
+      .json({ message: 'User not found', code: 'NOT_FOUND' })
   }
 
-  // If a token was issued in the last 60 seconds, refuse.
+  // If a token was issued in the last 60 seconds, refuse
   if (existing.emailVerificationExpiresAt) {
     const issuedAt =
       new Date(existing.emailVerificationExpiresAt).getTime() -
