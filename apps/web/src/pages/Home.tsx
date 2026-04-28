@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { VerificationBanner } from '../components/VerificationBanner'
 import { VoteButtons } from '../components/VoteButtons'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 import { ApiError } from '../services/auth'
 import { fetchPosts } from '../services/posts'
 import type { Post } from '../types/post'
@@ -18,15 +18,24 @@ export function Home() {
   const loadingRef = useRef(false)
   const location = useLocation()
 
+  const stateRef = useRef({ nextCursor: null as string | null, hasMore: true })
+
+  useEffect(() => {
+    stateRef.current = { nextCursor, hasMore }
+  }, [nextCursor, hasMore])
+
   const loadMore = useCallback(async () => {
-    if (loadingRef.current || !hasMore) return
+    if (loadingRef.current || !stateRef.current.hasMore) return
     loadingRef.current = true
     setIsLoading(true)
 
     const controller = new AbortController()
 
     try {
-      const page = await fetchPosts(nextCursor, controller.signal)
+      const page = await fetchPosts(
+        stateRef.current.nextCursor,
+        controller.signal,
+      )
       setPosts((prev) => [...prev, ...page.posts])
       setNextCursor(page.nextCursor)
       setHasMore(page.hasMore)
@@ -38,13 +47,11 @@ export function Home() {
       setIsLoading(false)
       loadingRef.current = false
     }
-
-    return () => controller.abort()
-  }, [user, nextCursor, hasMore])
+  }, [])
 
   useEffect(() => {
     loadMore()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadMore])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -129,7 +136,7 @@ export function Home() {
         {posts.length === 0 && !isLoading && !errMessage && (
           <div className="flex items-center justify-center h-[60vh]">
             <div className="text-center">
-              <p className="text-xl text-gray-400 mb-4">No posts yet</p>
+              <p className="text-xl text-gray-400 mb-4">No posts yet.</p>
               <p className="text-gray-500 mb-6">
                 Be the first to share something!
               </p>
@@ -184,7 +191,7 @@ export function Home() {
 
         {!hasMore && posts.length > 0 && (
           <div className="py-8 text-center text-gray-600 text-sm">
-            You've reached the end
+            You've reached the end.
           </div>
         )}
       </main>

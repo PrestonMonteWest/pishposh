@@ -1,6 +1,6 @@
 import { ArrowBigDown, ArrowBigUp } from 'lucide-react'
 import { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 import { voteOnPost } from '../services/posts'
 import type { VoteValue } from '../types/post'
 

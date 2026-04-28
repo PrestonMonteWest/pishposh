@@ -42,7 +42,7 @@ Currently, the web is the only supported platform. Native iOS and Android apps a
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - npm
 - PostgreSQL
 
