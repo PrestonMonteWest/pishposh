@@ -40,4 +40,4 @@ jobs:
             git reset --hard origin/main
             npm ci
             npm run build
-            sudo systemctl restart pishposh-server
+            sudo systemctl restart pishposh
