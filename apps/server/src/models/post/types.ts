@@ -1,4 +1,4 @@
-import { VoteValue } from '@/db/types.js'
+import type { VoteValue } from '@/db/types.js'
 
 export interface Post {
   id: string

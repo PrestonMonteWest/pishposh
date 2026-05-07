@@ -2,7 +2,7 @@ import { getDb } from '@/db/connection.js'
 import { type Posts, type VoteValue } from '@/db/types.js'
 import type { Selectable } from 'kysely'
 import { viewerVoteExpression } from './queries.js'
-import {
+import type {
   CreatePostData,
   PaginatedPosts,
   Post,
@@ -171,4 +171,8 @@ export async function findPostsPaginated(
   const nextCursor = hasMore ? posts[posts.length - 1].createdAt : null
 
   return { posts, nextCursor, hasMore }
+}
+
+export async function deletePostById(id: string) {
+  getDb().deleteFrom('posts').where('id', '=', id).execute()
 }

@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { VerificationBanner } from '../components/VerificationBanner'
-import { VoteButtons } from '../components/VoteButtons'
+import VerificationBanner from '../components/VerificationBanner'
+import VoteButtons from '../components/VoteButtons'
 import { useAuth } from '../hooks/useAuth'
 import { ApiError } from '../services/auth'
 import { fetchPosts } from '../services/posts'
 import type { Post } from '../types/post'
 
-export function Home() {
-  const { user, logout } = useAuth()
+function Home() {
+  const { logout, user } = useAuth()
   const [posts, setPosts] = useState<Post[]>([])
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(true)
@@ -101,10 +101,10 @@ export function Home() {
             )}
             {user && (
               <>
-                <span className="text-gray-400">@{user.username}</span>
+                <div className="text-gray-400">@{user.username}</div>
                 <button
                   onClick={logout}
-                  className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors"
                 >
                   Log out
                 </button>
@@ -114,8 +114,8 @@ export function Home() {
             {!user && (
               <Link
                 to="/login"
-                state={{ from: location }}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                state={{ from: location.pathname }}
+                className="text-gray-400 hover:text-white transition-colors"
               >
                 Log in
               </Link>
@@ -198,3 +198,5 @@ export function Home() {
     </div>
   )
 }
+
+export default Home

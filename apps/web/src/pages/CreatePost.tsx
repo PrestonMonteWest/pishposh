@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { createPost } from '../services/posts'
 
-export function CreatePost() {
+function CreatePost() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [error, setError] = useState('')
@@ -107,3 +107,5 @@ export function CreatePost() {
     </div>
   )
 }
+
+export default CreatePost

@@ -1,9 +1,9 @@
 import { getDb } from '@/db/connection.js'
-import { Users } from '@/db/types.js'
+import type { Users } from '@/db/types.js'
 import { sendVerificationEmail } from '@/lib/email.js'
 import { generateVerificationToken } from '@/lib/verification-tokens.js'
 import type { Selectable } from 'kysely'
-import {
+import type {
   CreateUserInput,
   EmailVerification,
   PublicUser,

@@ -7,7 +7,7 @@ export default defineConfig([
   globalIgnores(['dist']),
   {
     files: ['**/*.{ts,js}'],
-    extends: [js.configs.recommended, ...ts.configs.recommended],
+    extends: [js.configs.recommended, ts.configs.recommended],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.node,

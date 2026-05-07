@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { ApiError, resendEmailVerification } from '../services/auth'
 
-export function VerificationBanner() {
+function VerificationBanner() {
   const { user } = useAuth()
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
@@ -50,3 +50,5 @@ export function VerificationBanner() {
     </>
   )
 }
+
+export default VerificationBanner

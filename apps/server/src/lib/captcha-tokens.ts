@@ -1,3 +1,7 @@
+function hasSuccess(data: unknown): data is { success: boolean } {
+  return typeof (data as { success: unknown })?.success === 'boolean'
+}
+
 export async function verifyCaptchaToken(token: string): Promise<boolean> {
   const res = await fetch(
     process.env.TURNSTILE_VERIFY_URL ??
@@ -13,5 +17,6 @@ export async function verifyCaptchaToken(token: string): Promise<boolean> {
   )
 
   const data = await res.json()
-  return data.success
+  if (hasSuccess(data)) return data.success
+  return false
 }

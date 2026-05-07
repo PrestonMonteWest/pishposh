@@ -8,7 +8,7 @@ import type {
 } from '../types/post'
 import { getAuthHeaderFromStorage } from './auth'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 export async function fetchPost(
   id: string,
@@ -20,8 +20,10 @@ export async function fetchPost(
   })
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Request failed' }))
-    throw new Error(error.message || 'Failed to fetch post')
+    const error = await res
+      .json()
+      .catch(() => ({ message: 'Failed to fetch post' }))
+    throw new Error(error.message ?? 'Failed to fetch post')
   }
 
   const data = await res.json()
@@ -42,8 +44,10 @@ export async function fetchPosts(
   })
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Request failed' }))
-    throw new Error(error.message || 'Failed to fetch posts')
+    const error = await res
+      .json()
+      .catch(() => ({ message: 'Failed to fetch posts' }))
+    throw new Error(error.message ?? 'Failed to fetch posts')
   }
 
   return res.json()
@@ -64,8 +68,10 @@ export async function createPost(
   })
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Request failed' }))
-    throw new Error(error.message || 'Failed to create post')
+    const error = await res
+      .json()
+      .catch(() => ({ message: 'Failed to create post' }))
+    throw new Error(error.message ?? 'Failed to create post')
   }
 
   const data = await res.json()
@@ -88,8 +94,10 @@ export async function voteOnPost(
   })
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Request failed' }))
-    throw new Error(error.message || 'Failed to vote on post')
+    const error = await res
+      .json()
+      .catch(() => ({ message: 'Failed to vote on post' }))
+    throw new Error(error.message ?? 'Failed to vote on post')
   }
 
   return res.json()

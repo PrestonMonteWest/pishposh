@@ -8,11 +8,11 @@ import type {
   User,
 } from '../types/auth'
 
-interface AuthProviderProps {
+interface Props {
   children: ReactNode
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
+function AuthProvider({ children }: Props) {
   const [user, setUser] = useState<User | null>(null)
   const [tokens, setTokens] = useState<AuthTokens | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -106,3 +106,5 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
+
+export default AuthProvider

@@ -2,15 +2,12 @@ import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-interface ProtectedRouteProps {
+interface Props {
   emailVerificationRequired?: boolean
   children: ReactNode
 }
 
-export function ProtectedRoute({
-  children,
-  emailVerificationRequired,
-}: ProtectedRouteProps) {
+function ProtectedRoute({ children, emailVerificationRequired }: Props) {
   const { user, isLoading } = useAuth()
   const location = useLocation()
 
@@ -32,3 +29,5 @@ export function ProtectedRoute({
 
   return <>{children}</>
 }
+
+export default ProtectedRoute

@@ -1,10 +1,14 @@
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { useRef, useState, type SubmitEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ApiError } from '../services/auth'
 
-export function Signup() {
+interface SignupState {
+  from?: string
+}
+
+function Signup() {
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -15,6 +19,7 @@ export function Signup() {
   const { signup, isLoading } = useAuth()
   const navigate = useNavigate()
   const turnstileRef = useRef<TurnstileInstance>(null)
+  const location = useLocation()
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault()
@@ -38,7 +43,9 @@ export function Signup() {
         password,
         captchaToken: captchaToken!,
       })
-      navigate('/')
+      const state = location.state as SignupState | null
+      const from = state?.from ?? '/'
+      navigate(from)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Signup failed')
       turnstileRef.current?.reset()
@@ -174,3 +181,5 @@ export function Signup() {
     </div>
   )
 }
+
+export default Signup

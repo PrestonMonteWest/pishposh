@@ -1,10 +1,10 @@
-import { RefreshToken } from '@/models/user/types.js'
+import type { RefreshToken } from '@/models/user/types.js'
 import {
   deleteRefreshToken,
   findRefreshToken,
   storeRefreshToken,
 } from '@/models/user/user.js'
-import { Request } from 'express'
+import type { Request } from 'express'
 import jwt from 'jsonwebtoken'
 import { v4 as createUuid } from 'uuid'
 

@@ -1,6 +1,6 @@
-import { TokenPayload, tryReadToken } from '@/lib/identity-tokens.js'
+import { type TokenPayload, tryReadToken } from '@/lib/identity-tokens.js'
 import type { NextFunction, Request, RequestHandler, Response } from 'express'
-import { User } from '../models/user/types.js'
+import type { User } from '../models/user/types.js'
 import { findUserById } from '../models/user/user.js'
 
 declare global {

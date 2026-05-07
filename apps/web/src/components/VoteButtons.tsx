@@ -4,17 +4,13 @@ import { useAuth } from '../hooks/useAuth'
 import { voteOnPost } from '../services/posts'
 import type { VoteValue } from '../types/post'
 
-interface VoteButtonsProps {
+interface Props {
   postId: string
   initialScore: number
   initialViewerVote: VoteValue | null
 }
 
-export function VoteButtons({
-  postId,
-  initialScore,
-  initialViewerVote,
-}: VoteButtonsProps) {
+function VoteButtons({ postId, initialScore, initialViewerVote }: Props) {
   const [viewerVote, setViewerVote] = useState<VoteValue | null>(
     initialViewerVote,
   )
@@ -133,3 +129,5 @@ function computeDelta(previous: VoteValue | null, next: VoteValue): number {
   // Flip from one to the other
   return next === 'up' ? +2 : -2
 }
+
+export default VoteButtons

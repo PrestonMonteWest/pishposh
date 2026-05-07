@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { VerificationBanner } from '../components/VerificationBanner'
-import { VoteButtons } from '../components/VoteButtons'
+import VerificationBanner from '../components/VerificationBanner'
+import VoteButtons from '../components/VoteButtons'
 import { useAuth } from '../hooks/useAuth'
 import { fetchPost } from '../services/posts'
 import type { Post } from '../types/post'
 
-export function PostDetail() {
+function PostDetail() {
   const { id } = useParams<{ id: string }>()
   const [post, setPost] = useState<Post | null>(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const { user } = useAuth()
+  const { logout, user } = useAuth()
 
   useEffect(() => {
     if (!id) return
@@ -43,14 +43,47 @@ export function PostDetail() {
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="border-b border-gray-800 p-4 sticky top-0 bg-black/90 backdrop-blur-sm z-10">
-        <div className="max-w-2xl mx-auto flex items-center gap-4">
-          <Link
-            to="/"
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            &larr; Back
-          </Link>
-          <h1 className="text-2xl font-bold text-pink-500">PishPosh</h1>
+        <div className="max-w-2xl mx-auto flex justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              &larr; Back
+            </Link>
+            <h1 className="text-2xl font-bold text-pink-500">PishPosh</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            {(!user || user.emailVerified) && (
+              <Link
+                to="/create"
+                className="px-4 py-2 text-sm bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded transition-colors"
+              >
+                Create Post
+              </Link>
+            )}
+            {user && (
+              <>
+                <div className="text-gray-400">@{user.username}</div>
+                <button
+                  onClick={logout}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  Log out
+                </button>
+              </>
+            )}
+
+            {!user && (
+              <Link
+                to="/login"
+                state={{ from: location.pathname }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                Log in
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
@@ -93,3 +126,5 @@ export function PostDetail() {
     </div>
   )
 }
+
+export default PostDetail

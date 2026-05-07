@@ -1,6 +1,7 @@
 import { optionalAuth, requireAuth } from '@/middleware/auth.js'
 import {
   createPost,
+  deletePostById,
   findPostById,
   findPostsPaginated,
   voteOnPost,
@@ -130,5 +131,16 @@ router.get('/', optionalAuth, async (req: Request, res: Response) => {
   const result = await findPostsPaginated(limit, cursor, viewerId)
   return res.json(result)
 })
+
+router.delete(
+  '/:id',
+  requireAuth,
+  requireVerifiedEmail,
+  async (req: Request<{ id: string }>, res: Response) => {
+    const id = req.params.id
+    if (isUuid(id)) deletePostById(id)
+    return res.status(204).send()
+  },
+)
 
 export default router

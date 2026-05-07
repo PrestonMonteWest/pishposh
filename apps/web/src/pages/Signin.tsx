@@ -1,24 +1,35 @@
 import { useState, type SubmitEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-export function Login() {
+interface SigninState {
+  from?: string
+}
+
+function Signin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { login, isLoading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const handleSubmit = async (e: SubmitEvent) => {
+  const handleSubmit = (e: SubmitEvent) => {
+    if (isLoading) return
     e.preventDefault()
     setError('')
 
-    try {
-      await login({ email, password })
-      navigate('/')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+    async function doSubmit() {
+      try {
+        await login({ email, password })
+        const state = location.state as SigninState | null
+        const from = state?.from ?? '/'
+        navigate(from)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Login failed')
+      }
     }
+    void doSubmit()
   }
 
   return (
@@ -79,7 +90,11 @@ export function Login() {
 
         <p className="mt-6 text-center text-gray-400">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-pink-500 hover:underline">
+          <Link
+            to="/signup"
+            state={location.state}
+            className="text-pink-500 hover:underline"
+          >
             Sign up
           </Link>
         </p>
@@ -87,3 +102,5 @@ export function Login() {
     </div>
   )
 }
+
+export default Signin

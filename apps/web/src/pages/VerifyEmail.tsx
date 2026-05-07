@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError, verifyEmail } from '../services/auth'
 
-export function VerifyEmail() {
+function VerifyEmail() {
   const [params] = useSearchParams()
   const [status, setStatus] = useState<
     'loading' | 'ok' | 'expired' | 'invalid'
@@ -40,3 +40,5 @@ export function VerifyEmail() {
     return <p>That link has expired. Sign in and request a new one.</p>
   return <p>Invalid verification link.</p>
 }
+
+export default VerifyEmail
